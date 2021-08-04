@@ -2,6 +2,7 @@ package com.example.bpmappbackend.service;
 
 import com.example.bpmappbackend.domain.AppUser;
 import com.example.bpmappbackend.domain.Role;
+import org.springframework.security.core.userdetails.User;
 
 import java.util.List;
 
