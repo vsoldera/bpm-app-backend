@@ -1,0 +1,13 @@
+<component name="libraryTable">
+  <library name="Maven: org.minbox.framework:api-boot-mybatis-enhance-maven-codegen:2.3.4">
+    <CLASSES>
+      <root url="jar://$MAVEN_REPOSITORY$/org/minbox/framework/api-boot-mybatis-enhance-maven-codegen/2.3.4/api-boot-mybatis-enhance-maven-codegen-2.3.4.jar!/" />
+    </CLASSES>
+    <JAVADOC>
+      <root url="jar://$MAVEN_REPOSITORY$/org/minbox/framework/api-boot-mybatis-enhance-maven-codegen/2.3.4/api-boot-mybatis-enhance-maven-codegen-2.3.4-javadoc.jar!/" />
+    </JAVADOC>
+    <SOURCES>
+      <root url="jar://$MAVEN_REPOSITORY$/org/minbox/framework/api-boot-mybatis-enhance-maven-codegen/2.3.4/api-boot-mybatis-enhance-maven-codegen-2.3.4-sources.jar!/" />
+    </SOURCES>
+  </library>
+</component>
