@@ -19,22 +19,20 @@ public class SmsServiceImpl {
     AuthenticationManager authenticationManager;
 
     @Autowired
-    UserRepository userRepository;
+    UserDetailsServiceImpl userDetailsService;
 
     public Message sendSms(String phoneNumber) {
         Twilio.init(ACCOUNT_SID, AUTH_TOKEN);
-        log.info("User phone number is: " + phoneNumber);
-
+        log.info("User: " + userDetailsService.findByPhone(phoneNumber).getEmail() + " with phone number: " + phoneNumber);
         Message message = Message.creator(
                 new com.twilio.type.PhoneNumber(phoneNumber),
                 new com.twilio.type.PhoneNumber("+13152104249"),
                 "Bem-vindo ao BPM. Seu código é: " + generateToken()).create();
 
         return message;
-
     }
 
     public String generateToken() {
-        return RandomStringUtils.random(6, true, true).toUpperCase().toString();
+        return RandomStringUtils.random(6, true, true).toUpperCase();
     }
 }

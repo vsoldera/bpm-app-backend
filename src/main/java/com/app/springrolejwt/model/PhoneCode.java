@@ -23,6 +23,6 @@ public class PhoneCode {
     private String code;
 
     @Column(name = "pc_create_time")
-    private Timestamp createTime;
+    private Long createTime;
 }
 

@@ -3,14 +3,14 @@ package com.app.springrolejwt.controller;
 import com.app.springrolejwt.model.Role;
 import com.app.springrolejwt.model.User;
 import com.app.springrolejwt.model.enums.RoleEnum;
-import com.app.springrolejwt.model.vo.JwtVo;
-import com.app.springrolejwt.model.vo.MessageVo;
-import com.app.springrolejwt.model.vo.UserLoginVo;
-import com.app.springrolejwt.model.vo.UserSignupVo;
+import com.app.springrolejwt.model.vo.*;
+import com.app.springrolejwt.repository.implementation.SmsServiceImpl;
+import com.app.springrolejwt.repository.implementation.UserDetailsServiceImpl;
 import com.app.springrolejwt.repository.interfaces.RoleRepository;
 import com.app.springrolejwt.repository.interfaces.UserRepository;
 import com.app.springrolejwt.security.JwtUtils;
 import com.app.springrolejwt.repository.implementation.UserDetailsImpl;
+import com.twilio.rest.api.v2010.account.Message;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -22,9 +22,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @CrossOrigin(origins = "*", maxAge = 3600)
@@ -32,6 +30,7 @@ import java.util.stream.Collectors;
 @RequestMapping("/api/auth")
 @Log4j2
 public class AuthController {
+
 	@Autowired
 	AuthenticationManager authenticationManager;
 
@@ -47,6 +46,56 @@ public class AuthController {
 	@Autowired
 	JwtUtils jwtUtils;
 
+	@Autowired
+	SmsServiceImpl smsService;
+
+	@Autowired
+	UserDetailsServiceImpl userDetailsService;
+
+	@PostMapping("/sendSMS")
+	public Message sendSMS(@RequestParam String phoneNumber) {
+		log.info("There was a POST request to sign in using phone {}" + phoneNumber);
+		return smsService.sendSms("+" + phoneNumber);
+	}
+
+	@PostMapping("/authCode")
+	public ResponseEntity<?> authSMS(@RequestParam String code) {
+
+
+		log.info("Code: " + userDetailsService.findByCode(code).getUsername());
+		log.info("Password: " + userDetailsService.findByCode(code).getPassword());
+
+		userDetailsService.findByCode(code).setPassword(encoder.encode("12345"));
+
+		if(code.equals(userDetailsService.findByCode(code).getCode())) {
+			Authentication authentication = authenticationManager.authenticate(
+					new UsernamePasswordAuthenticationToken(userDetailsService.findByCode(code).getUsername(),
+							"12345"));
+
+
+			SecurityContextHolder.getContext().setAuthentication(authentication);
+			String jwt = jwtUtils.generateJwtToken(authentication);
+
+			UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
+			List<String> roles = userDetails.getAuthorities().stream()
+					.map(item -> item.getAuthority())
+					.collect(Collectors.toList());
+
+			log.info("There was a POST request to sign in from user: " + userDetailsService.findByCode(code).getUsername());
+
+			return ResponseEntity.ok(new JwtVo(jwt,
+					userDetails.getId(),
+					userDetails.getUsername(),
+					userDetails.getEmail(),
+					roles));
+
+		}
+
+		return ResponseEntity
+				.badRequest()
+				.body(new MessageVo("Error: Auth failed!"));
+	}
+
 	@PostMapping("/signin")
 	public ResponseEntity<?> authenticateUser(@Valid @RequestBody UserLoginVo loginRequest) {
 
@@ -55,7 +104,7 @@ public class AuthController {
 
 		SecurityContextHolder.getContext().setAuthentication(authentication);
 		String jwt = jwtUtils.generateJwtToken(authentication);
-		
+
 		UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
 		List<String> roles = userDetails.getAuthorities().stream()
 				.map(item -> item.getAuthority())
@@ -64,14 +113,16 @@ public class AuthController {
 		log.info("There was a POST request to sign in from user {}" + loginRequest.getUsername());
 
 		return ResponseEntity.ok(new JwtVo(jwt,
-												 userDetails.getId(), 
-												 userDetails.getUsername(), 
-												 userDetails.getEmail(), 
+												 userDetails.getId(),
+												 userDetails.getUsername(),
+												 userDetails.getEmail(),
 												 roles));
 	}
 
 	@PostMapping("/signup")
 	public ResponseEntity<?> registerUser(@Valid @RequestBody UserSignupVo signUpRequest) {
+
+
 		if (userRepository.existsByUsername(signUpRequest.getUsername())) {
 			return ResponseEntity
 					.badRequest()

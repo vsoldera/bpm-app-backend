@@ -40,6 +40,9 @@ public class User {
 	@NotBlank
 	private String phone;
 
+	@NotNull
+	private String code;
+
 	@ManyToMany(fetch = FetchType.LAZY)
 	@JoinTable(	name = "user_roles", 
 				joinColumns = @JoinColumn(name = "user_id"), 
@@ -54,6 +57,10 @@ public class User {
 		this.email = email;
 		this.password = password;
 		this.phone = phone;
+	}
+
+	public User(String code) {
+		this.code = code;
 	}
 
 }
