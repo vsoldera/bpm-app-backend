@@ -1,7 +1,7 @@
 {
 	"info": {
-		"_postman_id": "b080b8f1-e9e4-4b64-acfd-6ef8811e22d2",
-		"name": "ProjIntegratedTOP",
+		"_postman_id": "7a5ecb7b-898f-47e7-9d8f-15651c1c75c0",
+		"name": "ProjIntegratedTOP Copy",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
 	},
 	"item": [
@@ -10,7 +10,9 @@
 			"request": {
 				"method": "POST",
 				"header": [],
-				"url": null
+				"url": {
+					"raw": ""
+				}
 			},
 			"response": []
 		},
@@ -19,7 +21,9 @@
 			"request": {
 				"method": "POST",
 				"header": [],
-				"url": null
+				"url": {
+					"raw": ""
+				}
 			},
 			"response": []
 		},
@@ -86,7 +90,9 @@
 			"request": {
 				"method": "GET",
 				"header": [],
-				"url": null
+				"url": {
+					"raw": ""
+				}
 			},
 			"response": []
 		},
@@ -95,7 +101,9 @@
 			"request": {
 				"method": "GET",
 				"header": [],
-				"url": null
+				"url": {
+					"raw": ""
+				}
 			},
 			"response": []
 		},
@@ -104,7 +112,9 @@
 			"request": {
 				"method": "GET",
 				"header": [],
-				"url": null
+				"url": {
+					"raw": ""
+				}
 			},
 			"response": []
 		}

@@ -72,9 +72,6 @@ public class AuthController {
 		log.info("User: " + userDetailsService.findByPhone(userDetailsService.findByCode(code).getPhone()));
 		User user = userDetailsService.findByPhone("+" + phone);
 
-		log.info("FALA: " + code);
-		log.info("FALA2: " + phone);
-
 		if(user != null) {
 			user.setPassword(encoder.encode(user.getCode()));
 		}
