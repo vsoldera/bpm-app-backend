@@ -24,6 +24,6 @@ public class AccessController {
 	@GetMapping("/responsible")
 	@PreAuthorize("hasRole('RESPONSIBLE')")
 	public String responsibleAccess() {
-		return "Responsible has access dashboard! ";
+		return "Responsible has access to this dashboard! ";
 	}
 }

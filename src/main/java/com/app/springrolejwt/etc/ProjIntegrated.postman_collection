@@ -1,0 +1,112 @@
+{
+	"info": {
+		"_postman_id": "b080b8f1-e9e4-4b64-acfd-6ef8811e22d2",
+		"name": "ProjIntegratedTOP",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Register",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"url": null
+			},
+			"response": []
+		},
+		{
+			"name": "Login",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"url": null
+			},
+			"response": []
+		},
+		{
+			"name": "TokenAuth",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:8082/api/auth/authCode?code=abcderf",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8082",
+					"path": [
+						"api",
+						"auth",
+						"authCode"
+					],
+					"query": [
+						{
+							"key": "code",
+							"value": "abcderf"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "TokenRequest",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": ""
+				},
+				"url": {
+					"raw": "http://localhost:8082/api/auth/sendSMS?phoneNumber=5519982266665",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8082",
+					"path": [
+						"api",
+						"auth",
+						"sendSMS"
+					],
+					"query": [
+						{
+							"key": "phoneNumber",
+							"value": "5519982266665"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "All Access",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": null
+			},
+			"response": []
+		},
+		{
+			"name": "Get user dashboard",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": null
+			},
+			"response": []
+		},
+		{
+			"name": "Get responsible dashboard",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": null
+			},
+			"response": []
+		}
+	]
+}

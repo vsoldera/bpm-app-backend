@@ -1,9 +1,11 @@
 package com.app.springrolejwt.controller;
 
+import com.app.springrolejwt.model.RefreshToken;
 import com.app.springrolejwt.model.Role;
 import com.app.springrolejwt.model.User;
 import com.app.springrolejwt.model.enums.RoleEnum;
 import com.app.springrolejwt.model.vo.*;
+import com.app.springrolejwt.repository.implementation.RefreshTokenServiceImpl;
 import com.app.springrolejwt.repository.implementation.SmsServiceImpl;
 import com.app.springrolejwt.repository.implementation.UserDetailsServiceImpl;
 import com.app.springrolejwt.repository.interfaces.RoleRepository;
@@ -50,6 +52,9 @@ public class AuthController {
 	SmsServiceImpl smsService;
 
 	@Autowired
+	RefreshTokenServiceImpl refreshTokenService;
+
+	@Autowired
 	UserDetailsServiceImpl userDetailsService;
 
 	@PostMapping("/sendSMS")
@@ -60,17 +65,20 @@ public class AuthController {
 
 	@PostMapping("/authCode")
 	public ResponseEntity<?> authSMS(@RequestParam String code) {
-
-
+		//Optional do find user by phone (userValidation)
 		log.info("Code: " + userDetailsService.findByCode(code).getUsername());
 		log.info("Password: " + userDetailsService.findByCode(code).getPassword());
+		log.info("User: " + userDetailsService.findByPhone(userDetailsService.findByCode(code).getPhone()));
+		User user = userDetailsService.findByPhone(userDetailsService.findByCode(code).getPhone());
 
-		userDetailsService.findByCode(code).setPassword(encoder.encode("12345"));
+		if(user != null) {
+			user.setPassword(encoder.encode(user.getCode()));
+		}
 
 		if(code.equals(userDetailsService.findByCode(code).getCode())) {
 			Authentication authentication = authenticationManager.authenticate(
 					new UsernamePasswordAuthenticationToken(userDetailsService.findByCode(code).getUsername(),
-							"12345"));
+							userDetailsService.findByCode(code).getCode()));
 
 
 			SecurityContextHolder.getContext().setAuthentication(authentication);
@@ -82,12 +90,12 @@ public class AuthController {
 					.collect(Collectors.toList());
 
 			log.info("There was a POST request to sign in from user: " + userDetailsService.findByCode(code).getUsername());
-
+			RefreshToken refreshToken = refreshTokenService.createRefreshToken(userDetails.getId());
 			return ResponseEntity.ok(new JwtVo(jwt,
 					userDetails.getId(),
 					userDetails.getUsername(),
 					userDetails.getEmail(),
-					roles));
+					roles, refreshToken.getToken()));
 
 		}
 
@@ -111,12 +119,13 @@ public class AuthController {
 				.collect(Collectors.toList());
 
 		log.info("There was a POST request to sign in from user {}" + loginRequest.getUsername());
+		RefreshToken refreshToken = refreshTokenService.createRefreshToken(userDetails.getId());
 
 		return ResponseEntity.ok(new JwtVo(jwt,
 												 userDetails.getId(),
 												 userDetails.getUsername(),
 												 userDetails.getEmail(),
-												 roles));
+												 roles, refreshToken.getToken()));
 	}
 
 	@PostMapping("/signup")
@@ -176,5 +185,21 @@ public class AuthController {
 		userRepository.save(user);
 
 		return ResponseEntity.ok(new MessageVo("User registered successfully!"));
+	}
+
+	@PostMapping("/refreshtoken")
+	public ResponseEntity<?> refreshtoken(@Valid @RequestBody TokenRefreshRequest request) {
+
+		String requestRefreshToken = request.getRefreshToken();
+
+		return refreshTokenService.findByToken(requestRefreshToken)
+				.map(refreshTokenService::verifyExpiration)
+				.map(RefreshToken::getUser)
+				.map(user -> {
+					String token = jwtUtils.generateTokenFromUsername(user.getUsername());
+					return ResponseEntity.ok(new TokenRefreshResponse(token, requestRefreshToken));
+				})
+				.orElseThrow(() -> new RuntimeException(
+						"Refresh token is not in database!"));
 	}
 }

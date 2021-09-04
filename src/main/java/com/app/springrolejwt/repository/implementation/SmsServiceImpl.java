@@ -17,19 +17,20 @@ public class SmsServiceImpl {
 
     @Autowired
     AuthenticationManager authenticationManager;
-
     @Autowired
     UserDetailsServiceImpl userDetailsService;
+    @Autowired
+    UserRepository userRepository;
 
     public Message sendSms(String phoneNumber) {
         Twilio.init(ACCOUNT_SID, AUTH_TOKEN);
         log.info("User: " + userDetailsService.findByPhone(phoneNumber).getEmail() + " with phone number: " + phoneNumber);
-        Message message = Message.creator(
+        String token = generateToken();
+
+        return Message.creator(
                 new com.twilio.type.PhoneNumber(phoneNumber),
                 new com.twilio.type.PhoneNumber("+13152104249"),
-                "Bem-vindo ao BPM. Seu código é: " + generateToken()).create();
-
-        return message;
+                "Bem-vindo ao app BPM. Seu código é: " + token).create();
     }
 
     public String generateToken() {
