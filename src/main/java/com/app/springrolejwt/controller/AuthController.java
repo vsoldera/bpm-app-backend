@@ -64,22 +64,25 @@ public class AuthController {
 	}
 
 	@PostMapping("/authCode")
-	public ResponseEntity<?> authSMS(@RequestParam String code) {
+	public ResponseEntity<?> authSMS(@RequestParam String code, @RequestParam String phone) {
 		//Optional do find user by phone (userValidation)
+
 		log.info("Code: " + userDetailsService.findByCode(code).getUsername());
 		log.info("Password: " + userDetailsService.findByCode(code).getPassword());
 		log.info("User: " + userDetailsService.findByPhone(userDetailsService.findByCode(code).getPhone()));
-		User user = userDetailsService.findByPhone(userDetailsService.findByCode(code).getPhone());
+		User user = userDetailsService.findByPhone("+" + phone);
+
+		log.info("FALA: " + code);
+		log.info("FALA2: " + phone);
 
 		if(user != null) {
 			user.setPassword(encoder.encode(user.getCode()));
 		}
 
-		if(code.equals(userDetailsService.findByCode(code).getCode())) {
+		if(code.equals(user.getCode())) {
 			Authentication authentication = authenticationManager.authenticate(
 					new UsernamePasswordAuthenticationToken(userDetailsService.findByCode(code).getUsername(),
 							userDetailsService.findByCode(code).getCode()));
-
 
 			SecurityContextHolder.getContext().setAuthentication(authentication);
 			String jwt = jwtUtils.generateJwtToken(authentication);
@@ -91,6 +94,10 @@ public class AuthController {
 
 			log.info("There was a POST request to sign in from user: " + userDetailsService.findByCode(code).getUsername());
 			RefreshToken refreshToken = refreshTokenService.createRefreshToken(userDetails.getId());
+
+
+
+
 			return ResponseEntity.ok(new JwtVo(jwt,
 					userDetails.getId(),
 					userDetails.getUsername(),
