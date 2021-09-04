@@ -1,5 +1,6 @@
 package com.app.springrolejwt.repository.implementation;
 
+import com.app.springrolejwt.model.User;
 import com.app.springrolejwt.repository.interfaces.UserRepository;
 import com.twilio.Twilio;
 import com.twilio.rest.api.v2010.account.Message;
@@ -26,6 +27,11 @@ public class SmsServiceImpl {
         Twilio.init(ACCOUNT_SID, AUTH_TOKEN);
         log.info("User: " + userDetailsService.findByPhone(phoneNumber).getEmail() + " with phone number: " + phoneNumber);
         String token = generateToken();
+
+
+        User entity = userRepository.findByUsername(userDetailsService.findByPhone(phoneNumber).getUsername()).get();
+        entity.setCode(token);
+        userRepository.save(entity);
 
         return Message.creator(
                 new com.twilio.type.PhoneNumber(phoneNumber),
