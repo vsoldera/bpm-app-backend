@@ -14,7 +14,11 @@ import java.util.Set;
 public class UserSignupVo {
     @NotBlank
     private String username;
- 
+
+    @NotBlank
+    @NotNull
+    private String completeName;
+
     @NotBlank
     @Email
     private String email;

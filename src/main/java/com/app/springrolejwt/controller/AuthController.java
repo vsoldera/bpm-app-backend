@@ -22,6 +22,7 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.oauth2.provider.OAuth2Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
@@ -70,13 +71,13 @@ public class AuthController {
 
 		log.info("Code: " + userDetailsService.findByCode(code).getUsername());
 		log.info("Password: " + userDetailsService.findByCode(code).getPassword());
-		log.info("User: " + userDetailsService.findByPhone(userDetailsService.findByCode(code).getPhone()));
 		User user = userDetailsService.findByPhone("+" + phone);
 
 		if(user != null) {
 			user.setPassword(encoder.encode(user.getCode()));
 		}
 
+		assert user != null;
 		if(code.equals(user.getCode())) {
 			Authentication authentication = authenticationManager.authenticate(
 					new UsernamePasswordAuthenticationToken(userDetailsService.findByCode(code).getUsername(),
@@ -92,9 +93,6 @@ public class AuthController {
 
 			log.info("There was a POST request to sign in from user: " + userDetailsService.findByCode(code).getUsername());
 			RefreshToken refreshToken = refreshTokenService.createRefreshToken(userDetails.getId());
-
-
-
 
 			return ResponseEntity.ok(new JwtVo(jwt,
 					userDetails.getId(),
@@ -143,6 +141,8 @@ public class AuthController {
 					.body(new MessageVo("Error: Username is already taken!"));
 		}
 
+
+
 		if (userRepository.existsByEmail(signUpRequest.getEmail())) {
 			return ResponseEntity
 					.badRequest()
@@ -158,6 +158,7 @@ public class AuthController {
 							 signUpRequest.getPhone(),
 							 encoder.encode(signUpRequest.getPassword()),
 									 signUpRequest.getBirthDate(),
+									 signUpRequest.getCompleteName(),
 									 signUpRequest.getWeight(),
 				signUpRequest.getHeight(),
 				signUpRequest.getSex(),
@@ -170,26 +171,28 @@ public class AuthController {
 
 		if (strRoles == null) {
 			Role userRole = roleRepository.findByName(RoleEnum.ROLE_USER)
-					.orElseThrow(() -> new RuntimeException("Error: Role is not found."));
+					.orElseThrow(() -> new RuntimeException("Error: Role was not found."));
 			roles.add(userRole);
 		} else {
 			strRoles.forEach(role -> {
 				switch (role) {
 				case "responsible":
 					Role adminRole = roleRepository.findByName(RoleEnum.ROLE_RESPONSIBLE)
-							.orElseThrow(() -> new RuntimeException("Error: Role is not found: " + roleRepository.findByName(RoleEnum.ROLE_RESPONSIBLE)));
+							.orElseThrow(() -> new RuntimeException("Error: Role was not found: " + roleRepository.findByName(RoleEnum.ROLE_RESPONSIBLE)));
 					roles.add(adminRole);
 
 					break;
 				default:
 					Role userRole = roleRepository.findByName(RoleEnum.ROLE_USER)
-							.orElseThrow(() -> new RuntimeException("Error: Role is not found: " + roleRepository.findByName(RoleEnum.ROLE_USER)));
+							.orElseThrow(() -> new RuntimeException("Error: Role was not found: " + roleRepository.findByName(RoleEnum.ROLE_USER)));
 					roles.add(userRole);
 				}
 			});
 		}
 
 		log.info("There was a POST request to sign up from user {}" + signUpRequest.getUsername());
+
+		user.setUuid(UUID.randomUUID().toString().substring(0, 5));
 
 		user.setRoles(roles);
 		userRepository.save(user);
@@ -212,4 +215,5 @@ public class AuthController {
 				.orElseThrow(() -> new RuntimeException(
 						"Refresh token is not in database!"));
 	}
+
 }

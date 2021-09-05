@@ -13,6 +13,7 @@ import javax.validation.constraints.Size;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.UUID;
 
 
 @Entity
@@ -32,6 +33,14 @@ public class User {
 	@NotBlank
 	@NotNull
 	private String username;
+
+	@NotBlank
+	@NotNull
+	private String completeName;
+
+	@NotBlank
+	@NotNull
+	private String uuid;
 
 	@NotBlank
 	@NotNull
@@ -88,13 +97,14 @@ public class User {
 	}
 
 	public User(String username, String email, String phone, String password,
-				Date birthDate, Integer weight, Integer height, Boolean sex,
+				Date birthDate, String completeName, Integer weight, Integer height, Boolean sex,
 				Boolean isWheelchairUser, Boolean hasAlzheimer) {
 		this.username = username;
 		this.email = email;
 		this.password = password;
 		this.phone = phone;
 		this.birthDate = birthDate;
+		this.completeName = completeName;
 		this.weight = weight;
 		this.height = height;
 		this.sex = sex;

@@ -1,12 +1,9 @@
 package com.app.springrolejwt.repository.implementation;
 
 
-import com.app.springrolejwt.model.PhoneCode;
 import com.app.springrolejwt.model.RefreshToken;
 import com.app.springrolejwt.model.User;
 import com.app.springrolejwt.repository.interfaces.UserRepository;
-import javassist.NotFoundException;
-import org.apache.ibatis.annotations.Param;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -21,6 +18,8 @@ public class UserDetailsServiceImpl implements UserDetailsService {
 
 	@Autowired
 	UserRepository userRepository;
+
+
 
 	@Override
 	@Transactional
@@ -45,6 +44,10 @@ public class UserDetailsServiceImpl implements UserDetailsService {
 
 		if (!userDevice.getIsRefreshActive()) {
 			throw new RuntimeException("Refresh blocked for the device. Please login through a different device");		}
+	}
+
+	public Optional<User> findByToken(Long userId) {
+		return userRepository.findById(userId);
 	}
 
 	public Optional<User> findById(Long userId) {

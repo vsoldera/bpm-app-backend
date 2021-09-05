@@ -2,12 +2,14 @@ package com.app.springrolejwt.repository.implementation;
 
 import com.app.springrolejwt.model.User;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import lombok.AllArgsConstructor;
 import lombok.Data;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import java.util.Collection;
+import java.util.Date;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
@@ -20,6 +22,8 @@ public class UserDetailsImpl implements UserDetails {
 
 	private String username;
 
+	private String completeName;
+
 	private String email;
 
 	private String phone;
@@ -29,14 +33,29 @@ public class UserDetailsImpl implements UserDetails {
 
 	private Collection<? extends GrantedAuthority> authorities;
 
-	public UserDetailsImpl(Long id, String username, String email, String phone, String password,
-			Collection<? extends GrantedAuthority> authorities) {
+	private Date birthDate;
+	private Integer weight;
+	private Integer height;
+	private Boolean sex;
+	private Boolean isWheelchairUser;
+	private Boolean hasAlzheimer;
+
+
+
+	public UserDetailsImpl(Long id, String username, String completeName, String email, String phone, String password, Collection<? extends GrantedAuthority> authorities, Date birthDate, Integer weight, Integer height, Boolean sex, Boolean isWheelchairUser, Boolean hasAlzheimer) {
 		this.id = id;
 		this.username = username;
+		this.completeName = completeName;
 		this.email = email;
 		this.phone = phone;
 		this.password = password;
 		this.authorities = authorities;
+		this.birthDate = birthDate;
+		this.weight = weight;
+		this.height = height;
+		this.sex = sex;
+		this.isWheelchairUser = isWheelchairUser;
+		this.hasAlzheimer = hasAlzheimer;
 	}
 
 	public static UserDetailsImpl build(User user) {
@@ -46,11 +65,19 @@ public class UserDetailsImpl implements UserDetails {
 
 		return new UserDetailsImpl(
 				user.getId(), 
-				user.getUsername(), 
+				user.getUsername(),
+				user.getCompleteName(),
 				user.getEmail(),
 				user.getPhone(),
 				user.getPassword(), 
-				authorities);
+				authorities,
+				user.getBirthDate(),
+				user.getWeight(),
+				user.getHeight(),
+				user.getSex(),
+				user.getIsWheelchairUser(),
+				user.getHasAlzheimer()
+		);
 	}
 
 	@Override
