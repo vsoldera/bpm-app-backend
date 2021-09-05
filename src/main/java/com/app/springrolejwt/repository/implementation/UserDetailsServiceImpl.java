@@ -2,6 +2,7 @@ package com.app.springrolejwt.repository.implementation;
 
 
 import com.app.springrolejwt.model.PhoneCode;
+import com.app.springrolejwt.model.RefreshToken;
 import com.app.springrolejwt.model.User;
 import com.app.springrolejwt.repository.interfaces.UserRepository;
 import javassist.NotFoundException;
@@ -16,7 +17,6 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.Optional;
 
 @Service
-
 public class UserDetailsServiceImpl implements UserDetailsService {
 
 	@Autowired
@@ -37,6 +37,18 @@ public class UserDetailsServiceImpl implements UserDetailsService {
 
 	public User findByCode(String code) {
 		return userRepository.findByCode(code);
+	}
+
+	public void verifyRefreshAvailability(RefreshToken refreshToken) {
+		User userDevice = userRepository.findByRefreshToken(refreshToken)
+				.orElseThrow(() -> new RuntimeException("No device found for the matching token. Please login again"));
+
+		if (!userDevice.getIsRefreshActive()) {
+			throw new RuntimeException("Refresh blocked for the device. Please login through a different device");		}
+	}
+
+	public Optional<User> findById(Long userId) {
+		return userRepository.findById(userId);
 	}
 
 }

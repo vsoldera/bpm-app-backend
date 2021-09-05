@@ -16,6 +16,7 @@ import com.twilio.rest.api.v2010.account.Message;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -155,8 +156,13 @@ public class AuthController {
 		User user = new User(signUpRequest.getUsername(),
 							 signUpRequest.getEmail(),
 							 signUpRequest.getPhone(),
-							 encoder.encode(signUpRequest.getPassword())
-
+							 encoder.encode(signUpRequest.getPassword()),
+									 signUpRequest.getBirthDate(),
+									 signUpRequest.getWeight(),
+				signUpRequest.getHeight(),
+				signUpRequest.getSex(),
+				signUpRequest.getIsWheelchairUser(),
+				signUpRequest.getHasAlzheimer()
 		);
 
 		Set<String> strRoles = signUpRequest.getRole();

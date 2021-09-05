@@ -51,4 +51,14 @@ public class RefreshTokenServiceImpl {
     public int deleteByUserId(Long userId) {
         return refreshTokenRepository.deleteByUser(userRepository.findById(userId).get());
     }
+
+    public void increaseCount(RefreshToken refreshToken) {
+        refreshToken.incrementRefreshCount();
+        refreshTokenRepository.save(refreshToken);
+    }
+
+    public void deleteById(Long id) {
+        refreshTokenRepository.deleteById(id);
+    }
+
 }

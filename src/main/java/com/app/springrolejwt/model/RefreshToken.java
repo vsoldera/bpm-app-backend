@@ -11,6 +11,9 @@ import javax.persistence.*;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
+@Table(	name = "refreshtoken",
+        uniqueConstraints = {
+                @UniqueConstraint(columnNames = "token")})
 public class RefreshToken {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
@@ -20,10 +23,16 @@ public class RefreshToken {
     @JoinColumn(name = "user_id", referencedColumnName = "id")
     private User user;
 
-    @Column(nullable = false, unique = true)
+    @Column(unique = true)
     private String token;
 
-    @Column(nullable = false)
+    private Long refreshCount;
+
+    @Column
     private Instant expiryDate;
+
+    public void incrementRefreshCount() {
+        refreshCount = refreshCount + 1;
+    }
 
 }
