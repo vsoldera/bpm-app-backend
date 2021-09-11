@@ -23,6 +23,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.provider.OAuth2Authentication;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
@@ -66,6 +67,7 @@ public class AuthController {
 	}
 
 	@PostMapping("/authCode")
+	@Transactional
 	public ResponseEntity<?> authSMS(@RequestParam String code, @RequestParam String phone) {
 		//Optional do find user by phone (userValidation)
 
@@ -93,6 +95,11 @@ public class AuthController {
 
 			log.info("There was a POST request to sign in from user: " + userDetailsService.findByCode(code).getUsername());
 			RefreshToken refreshToken = refreshTokenService.createRefreshToken(userDetails.getId());
+
+			log.info("There was a POST request to sign in from user: " + userDetailsService.findByCode(code).getUsername());
+
+			//refreshTokenService.deleteByUserId(userDetails.getId());
+			userDetailsService.deleteCodeByPhone("+" + phone);
 
 			return ResponseEntity.ok(new JwtVo(jwt,
 					userDetails.getId(),

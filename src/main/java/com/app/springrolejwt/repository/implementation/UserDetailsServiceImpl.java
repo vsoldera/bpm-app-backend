@@ -19,8 +19,6 @@ public class UserDetailsServiceImpl implements UserDetailsService {
 	@Autowired
 	UserRepository userRepository;
 
-
-
 	@Override
 	@Transactional
 	public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
@@ -36,6 +34,11 @@ public class UserDetailsServiceImpl implements UserDetailsService {
 
 	public User findByCode(String code) {
 		return userRepository.findByCode(code);
+	}
+
+	public String deleteCodeByPhone(String phone) {
+		//return userRepository.deleteCodeByPhone(phone);
+		return "Whatever";
 	}
 
 	public void verifyRefreshAvailability(RefreshToken refreshToken) {
