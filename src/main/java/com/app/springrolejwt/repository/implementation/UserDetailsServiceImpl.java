@@ -22,14 +22,17 @@ public class UserDetailsServiceImpl implements UserDetailsService {
 	@Override
 	@Transactional
 	public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-		User user = userRepository.findByUsername(username)
-				.orElseThrow(() -> new UsernameNotFoundException("User Not Found with username: " + username));
+		User user = userRepository.findByUsername(username);
 
 		return UserDetailsImpl.build(user);
 	}
 
 	public User findByPhone(String phoneNumber) {
 		return userRepository.findByPhone(phoneNumber);
+	}
+
+	public Long findIdByUsername(String username) {
+		return userRepository.findIdByUsername(username);
 	}
 
 	public User findByCode(String code) {

@@ -1,5 +1,6 @@
 package com.app.springrolejwt.repository.implementation;
 
+import com.app.springrolejwt.config.WebSecurityConfig;
 import com.app.springrolejwt.model.User;
 import com.app.springrolejwt.repository.interfaces.UserRepository;
 import com.twilio.Twilio;
@@ -8,6 +9,7 @@ import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -22,17 +24,21 @@ public class SmsServiceImpl {
     UserDetailsServiceImpl userDetailsService;
     @Autowired
     UserRepository userRepository;
+    @Autowired
+    PasswordEncoder encoder;
 
     public Message sendSms(String phoneNumber) {
         Twilio.init(ACCOUNT_SID, AUTH_TOKEN);
-        log.info("User: " + userDetailsService.findByPhone(phoneNumber).getEmail() + " with phone number: " + phoneNumber);
+        log.info("User with phone number: " + phoneNumber);
         String token = generateToken();
 
 
-        User entity = userRepository.findByUsername(userDetailsService.findByPhone(phoneNumber).getUsername()).get();
+        //User entity = userRepository.findByUsername(userDetailsService.findByPhone(phoneNumber).getPhone()).get();
+        User entity = new User();
+        entity.setUsername(phoneNumber);
+        entity.setPassword(encoder.encode(token));
         entity.setCode(token);
         userRepository.save(entity);
-
 
         return Message.creator(
                 new com.twilio.type.PhoneNumber(phoneNumber),

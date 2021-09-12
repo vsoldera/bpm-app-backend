@@ -1,5 +1,6 @@
 package com.app.springrolejwt.controller;
 
+import com.app.springrolejwt.config.WebSecurityConfig;
 import com.app.springrolejwt.model.RefreshToken;
 import com.app.springrolejwt.model.Role;
 import com.app.springrolejwt.model.User;
@@ -14,8 +15,9 @@ import com.app.springrolejwt.security.JwtUtils;
 import com.app.springrolejwt.repository.implementation.UserDetailsImpl;
 import com.twilio.rest.api.v2010.account.Message;
 import lombok.extern.log4j.Log4j2;
+import org.apache.commons.codec.binary.Base64;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.*;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -61,6 +63,7 @@ public class AuthController {
 	UserDetailsServiceImpl userDetailsService;
 
 	@PostMapping("/sendSMS")
+	@Transactional
 	public Message sendSMS(@RequestParam String phoneNumber) {
 		log.info("There was a POST request to sign in using phone {}" + phoneNumber);
 		return smsService.sendSms("+" + phoneNumber);
@@ -71,24 +74,31 @@ public class AuthController {
 	public ResponseEntity<?> authSMS(@RequestParam String code, @RequestParam String phone) {
 		//Optional do find user by phone (userValidation)
 
-		log.info("Code: " + userDetailsService.findByCode(code).getUsername());
+		log.info("Username: " + userDetailsService.findByCode(code).getUsername());
 		log.info("Password: " + userDetailsService.findByCode(code).getPassword());
 		User user = userDetailsService.findByPhone("+" + phone);
-
 		if(user != null) {
 			user.setPassword(encoder.encode(user.getCode()));
 		}
 
 		assert user != null;
-		if(code.equals(user.getCode())) {
+		if(code.equals(userDetailsService.findByCode(code).getCode()) && code != null) {
 			Authentication authentication = authenticationManager.authenticate(
 					new UsernamePasswordAuthenticationToken(userDetailsService.findByCode(code).getUsername(),
 							userDetailsService.findByCode(code).getCode()));
 
 			SecurityContextHolder.getContext().setAuthentication(authentication);
+
+			//Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+			User username = userRepository.findByUsername(authentication.getName());
+
+			username.setCode(null);
+			userRepository.save(username);
+
 			String jwt = jwtUtils.generateJwtToken(authentication);
 
 			UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
+
 			List<String> roles = userDetails.getAuthorities().stream()
 					.map(item -> item.getAuthority())
 					.collect(Collectors.toList());
@@ -104,7 +114,6 @@ public class AuthController {
 			return ResponseEntity.ok(new JwtVo(jwt,
 					userDetails.getId(),
 					userDetails.getUsername(),
-					userDetails.getEmail(),
 					roles, refreshToken.getToken()));
 
 		}
@@ -116,6 +125,8 @@ public class AuthController {
 
 	@PostMapping("/signin")
 	public ResponseEntity<?> authenticateUser(@Valid @RequestBody UserLoginVo loginRequest) {
+
+
 
 		Authentication authentication = authenticationManager.authenticate(
 				new UsernamePasswordAuthenticationToken(loginRequest.getUsername(), loginRequest.getPassword()));
@@ -134,12 +145,15 @@ public class AuthController {
 		return ResponseEntity.ok(new JwtVo(jwt,
 												 userDetails.getId(),
 												 userDetails.getUsername(),
-												 userDetails.getEmail(),
 												 roles, refreshToken.getToken()));
 	}
 
 	@PostMapping("/signup")
+	@Transactional
 	public ResponseEntity<?> registerUser(@Valid @RequestBody UserSignupVo signUpRequest) {
+
+
+		Authentication auth = SecurityContextHolder.getContext().getAuthentication();
 
 
 		if (userRepository.existsByUsername(signUpRequest.getUsername())) {
@@ -147,8 +161,6 @@ public class AuthController {
 					.badRequest()
 					.body(new MessageVo("Error: Username is already taken!"));
 		}
-
-
 
 		if (userRepository.existsByEmail(signUpRequest.getEmail())) {
 			return ResponseEntity
@@ -159,19 +171,19 @@ public class AuthController {
 		log.info("Saving user: " + signUpRequest.getUsername() + " with e-mail: "
 				+ signUpRequest.getEmail() + " with Phone Number: " + signUpRequest.getPhone() +  " to the database");
 
-		// Create new user's account
-		User user = new User(signUpRequest.getUsername(),
-							 signUpRequest.getEmail(),
-							 signUpRequest.getPhone(),
-							 encoder.encode(signUpRequest.getPassword()),
-									 signUpRequest.getBirthDate(),
-									 signUpRequest.getCompleteName(),
-									 signUpRequest.getWeight(),
-				signUpRequest.getHeight(),
-				signUpRequest.getSex(),
-				signUpRequest.getIsWheelchairUser(),
-				signUpRequest.getHasAlzheimer()
-		);
+
+		User username = userRepository.findByUsername(auth.getName());
+		username.setUsername(signUpRequest.getUsername());
+		username.setEmail(signUpRequest.getEmail());
+		username.setPhone(signUpRequest.getPhone());
+		username.setPassword(encoder.encode(signUpRequest.getPassword()));
+		username.setBirthDate(signUpRequest.getBirthDate());
+		username.setCompleteName(signUpRequest.getCompleteName());
+		username.setWeight(signUpRequest.getWeight());
+		username.setHeight(signUpRequest.getHeight());
+		username.setSex(signUpRequest.getSex());
+		username.setIsWheelchairUser(signUpRequest.getIsWheelchairUser());
+		username.setHasAlzheimer(signUpRequest.getHasAlzheimer());
 
 		Set<String> strRoles = signUpRequest.getRole();
 		Set<Role> roles = new HashSet<>();
@@ -183,31 +195,32 @@ public class AuthController {
 		} else {
 			strRoles.forEach(role -> {
 				switch (role) {
-				case "responsible":
-					Role adminRole = roleRepository.findByName(RoleEnum.ROLE_RESPONSIBLE)
-							.orElseThrow(() -> new RuntimeException("Error: Role was not found: " + roleRepository.findByName(RoleEnum.ROLE_RESPONSIBLE)));
-					roles.add(adminRole);
+					case "responsible":
+						Role adminRole = roleRepository.findByName(RoleEnum.ROLE_RESPONSIBLE)
+								.orElseThrow(() -> new RuntimeException("Error: Role was not found: " + roleRepository.findByName(RoleEnum.ROLE_RESPONSIBLE)));
+						roles.add(adminRole);
 
-					break;
-				default:
-					Role userRole = roleRepository.findByName(RoleEnum.ROLE_USER)
-							.orElseThrow(() -> new RuntimeException("Error: Role was not found: " + roleRepository.findByName(RoleEnum.ROLE_USER)));
-					roles.add(userRole);
+						break;
+					default:
+						Role userRole = roleRepository.findByName(RoleEnum.ROLE_USER)
+								.orElseThrow(() -> new RuntimeException("Error: Role was not found: " + roleRepository.findByName(RoleEnum.ROLE_USER)));
+						roles.add(userRole);
 				}
 			});
 		}
 
 		log.info("There was a POST request to sign up from user {}" + signUpRequest.getUsername());
 
-		user.setUuid(UUID.randomUUID().toString().substring(0, 5));
+		username.setUuid(UUID.randomUUID().toString().substring(0, 5));
 
-		user.setRoles(roles);
-		userRepository.save(user);
+		username.setRoles(roles);
+		userRepository.save(username);
 
 		return ResponseEntity.ok(new MessageVo("User registered successfully!"));
 	}
 
 	@PostMapping("/refreshtoken")
+	@Transactional
 	public ResponseEntity<?> refreshtoken(@Valid @RequestBody TokenRefreshRequest request) {
 
 		String requestRefreshToken = request.getRefreshToken();
@@ -222,5 +235,17 @@ public class AuthController {
 				.orElseThrow(() -> new RuntimeException(
 						"Refresh token is not in database!"));
 	}
+
+	private static HttpHeaders getHeaders () {
+		String adminuserCredentials = "adminuser:adminpassword";
+		String encodedCredentials =
+				new String(Base64.encodeBase64(adminuserCredentials.getBytes()));
+
+		HttpHeaders httpHeaders = new HttpHeaders();
+		httpHeaders.add("Authorization", "Basic " + encodedCredentials);
+		httpHeaders.setAccept(Arrays.asList(MediaType.APPLICATION_JSON));
+		return httpHeaders;
+	}
+
 
 }

@@ -17,11 +17,10 @@ import java.util.UUID;
 
 
 @Entity
-@Table(	name = "users", 
+@Table(	name = "users",
 		uniqueConstraints = { 
 			@UniqueConstraint(columnNames = "username"),
-			@UniqueConstraint(columnNames = "email"),
-				@UniqueConstraint(columnNames = "phone")
+			@UniqueConstraint(columnNames = "email")
 		})
 @Data
 @AllArgsConstructor
@@ -94,6 +93,23 @@ public class User {
 	private Boolean isRefreshActive;
 
 	public User() {
+	}
+
+	public User(Long id, String username, String email, String phone, String password,
+				Date birthDate, String completeName, Integer weight, Integer height, Boolean sex,
+				Boolean isWheelchairUser, Boolean hasAlzheimer) {
+		this.id = id;
+		this.username = username;
+		this.email = email;
+		this.password = password;
+		this.phone = phone;
+		this.birthDate = birthDate;
+		this.completeName = completeName;
+		this.weight = weight;
+		this.height = height;
+		this.sex = sex;
+		this.isWheelchairUser = isWheelchairUser;
+		this.hasAlzheimer = hasAlzheimer;
 	}
 
 	public User(String username, String email, String phone, String password,
