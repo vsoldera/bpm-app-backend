@@ -9,6 +9,7 @@ import com.app.springrolejwt.model.vo.*;
 import com.app.springrolejwt.repository.implementation.RefreshTokenServiceImpl;
 import com.app.springrolejwt.repository.implementation.SmsServiceImpl;
 import com.app.springrolejwt.repository.implementation.UserDetailsServiceImpl;
+import com.app.springrolejwt.repository.interfaces.RefreshTokenRepository;
 import com.app.springrolejwt.repository.interfaces.RoleRepository;
 import com.app.springrolejwt.repository.interfaces.UserRepository;
 import com.app.springrolejwt.security.JwtUtils;
@@ -43,6 +44,9 @@ public class AuthController {
 
 	@Autowired
 	UserRepository userRepository;
+
+	@Autowired
+	RefreshTokenRepository refreshTokenRepository;
 
 	@Autowired
 	RoleRepository roleRepository;
@@ -168,8 +172,6 @@ public class AuthController {
 
 		Authentication auth = SecurityContextHolder.getContext().getAuthentication();
 
-
-
 		User username = userRepository.findByUsername(auth.getName());
 		username.setUsername(signUpRequest.getUsername());
 		username.setEmail(signUpRequest.getEmail());
@@ -228,6 +230,10 @@ public class AuthController {
 		log.info("There was a POST request to sign in from user {}" + signUpRequest.getUsername());
 		RefreshToken refreshToken = refreshTokenService.createRefreshToken(userDetails.getId());
 
+		User user = userRepository.findByUsername(auth.getName());
+
+		Optional<RefreshToken> byRefreshToken = refreshTokenRepository.findByToken(jwt);
+
 		return ResponseEntity.ok(new JwtVo(jwt,
 				userDetails.getId(),
 				userDetails.getUsername(),
@@ -245,22 +251,10 @@ public class AuthController {
 				.map(RefreshToken::getUser)
 				.map(user -> {
 					String token = jwtUtils.generateTokenFromUsername(user.getUsername());
+
 					return ResponseEntity.ok(new TokenRefreshResponse(token, requestRefreshToken));
 				})
 				.orElseThrow(() -> new RuntimeException(
 						"Refresh token is not in database!"));
 	}
-
-	private static HttpHeaders getHeaders () {
-		String adminuserCredentials = "adminuser:adminpassword";
-		String encodedCredentials =
-				new String(Base64.encodeBase64(adminuserCredentials.getBytes()));
-
-		HttpHeaders httpHeaders = new HttpHeaders();
-		httpHeaders.add("Authorization", "Basic " + encodedCredentials);
-		httpHeaders.setAccept(Arrays.asList(MediaType.APPLICATION_JSON));
-		return httpHeaders;
-	}
-
-
 }

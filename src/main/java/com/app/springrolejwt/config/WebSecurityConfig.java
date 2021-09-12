@@ -5,6 +5,7 @@ import com.app.springrolejwt.security.AuthTokenFilter;
 import com.app.springrolejwt.repository.implementation.UserDetailsServiceImpl;
 import org.apache.commons.codec.binary.Base64;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Scope;
@@ -42,8 +43,17 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 		return new AuthTokenFilter();
 	}
 
+	@Value("${spring.security.user.name}")
+	private String username;
+
+	@Value("${spring.security.user.password}")
+	private String password;
+
 	@Override
 	public void configure(AuthenticationManagerBuilder authenticationManagerBuilder) throws Exception {
+
+		authenticationManagerBuilder.inMemoryAuthentication()
+				.withUser(username).password(passwordEncoder().encode(password)).roles("USER");
 		authenticationManagerBuilder.userDetailsService(userDetailsService).passwordEncoder(passwordEncoder());
 	}
 
@@ -64,7 +74,8 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 			.exceptionHandling().authenticationEntryPoint(unauthorizedHandler).and()
 			.sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS).and()
 			.authorizeRequests()
-			.antMatchers("/api/get/**").permitAll()
+			.antMatchers("/api/get/**").authenticated()
+				.antMatchers("/api/auth/**").authenticated()
 			.anyRequest().authenticated().and().httpBasic();
 
 		http.addFilterBefore(authenticationJwtTokenFilter(), UsernamePasswordAuthenticationFilter.class);
@@ -76,6 +87,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 		protected void configure(HttpSecurity http) throws Exception {
 			http
 					.antMatcher("/api/auth**")
+					.antMatcher("/api/get**")
 					.httpBasic();
 		}
 	}
