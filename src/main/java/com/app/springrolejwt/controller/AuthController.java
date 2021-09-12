@@ -103,10 +103,10 @@ public class AuthController {
 					.map(item -> item.getAuthority())
 					.collect(Collectors.toList());
 
-			log.info("There was a POST request to sign in from user: " + userDetailsService.findByCode(code).getUsername());
+			//log.info("There was a POST request to sign in from user: " + userDetailsService.findByCode(code).getUsername());
 			RefreshToken refreshToken = refreshTokenService.createRefreshToken(userDetails.getId());
 
-			log.info("There was a POST request to sign in from user: " + userDetailsService.findByCode(code).getUsername());
+			//log.info("There was a POST request to sign in from user: " + userDetailsService.findByCode(code).getUsername());
 
 			//refreshTokenService.deleteByUserId(userDetails.getId());
 			userDetailsService.deleteCodeByPhone("+" + phone);
@@ -125,8 +125,6 @@ public class AuthController {
 
 	@PostMapping("/signin")
 	public ResponseEntity<?> authenticateUser(@Valid @RequestBody UserLoginVo loginRequest) {
-
-
 
 		Authentication authentication = authenticationManager.authenticate(
 				new UsernamePasswordAuthenticationToken(loginRequest.getUsername(), loginRequest.getPassword()));
@@ -153,9 +151,6 @@ public class AuthController {
 	public ResponseEntity<?> registerUser(@Valid @RequestBody UserSignupVo signUpRequest) {
 
 
-		Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-
-
 		if (userRepository.existsByUsername(signUpRequest.getUsername())) {
 			return ResponseEntity
 					.badRequest()
@@ -170,6 +165,9 @@ public class AuthController {
 
 		log.info("Saving user: " + signUpRequest.getUsername() + " with e-mail: "
 				+ signUpRequest.getEmail() + " with Phone Number: " + signUpRequest.getPhone() +  " to the database");
+
+		Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+
 
 
 		User username = userRepository.findByUsername(auth.getName());
@@ -216,7 +214,24 @@ public class AuthController {
 		username.setRoles(roles);
 		userRepository.save(username);
 
-		return ResponseEntity.ok(new MessageVo("User registered successfully!"));
+		Authentication authentication = authenticationManager.authenticate(
+				new UsernamePasswordAuthenticationToken(signUpRequest.getUsername(), signUpRequest.getPassword()));
+
+		SecurityContextHolder.getContext().setAuthentication(authentication);
+		String jwt = jwtUtils.generateJwtToken(authentication);
+
+		UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
+		List<String> rolesFree = userDetails.getAuthorities().stream()
+				.map(item -> item.getAuthority())
+				.collect(Collectors.toList());
+
+		log.info("There was a POST request to sign in from user {}" + signUpRequest.getUsername());
+		RefreshToken refreshToken = refreshTokenService.createRefreshToken(userDetails.getId());
+
+		return ResponseEntity.ok(new JwtVo(jwt,
+				userDetails.getId(),
+				userDetails.getUsername(),
+				rolesFree, refreshToken.getToken()));
 	}
 
 	@PostMapping("/refreshtoken")
