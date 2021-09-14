@@ -3,6 +3,7 @@ package com.app.springrolejwt.controller;
 import com.app.springrolejwt.config.WebSecurityConfig;
 import com.app.springrolejwt.model.RefreshToken;
 import com.app.springrolejwt.model.Role;
+import org.springframework.security.core.Authentication;
 import com.app.springrolejwt.model.User;
 import com.app.springrolejwt.model.enums.RoleEnum;
 import com.app.springrolejwt.model.vo.*;
@@ -24,6 +25,7 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.provider.OAuth2Authentication;
 import org.springframework.transaction.annotation.Transactional;
@@ -81,9 +83,6 @@ public class AuthController {
 		log.info("Username: " + userDetailsService.findByCode(code).getUsername());
 		log.info("Password: " + userDetailsService.findByCode(code).getPassword());
 		User user = userDetailsService.findByPhone("+" + phone);
-		if(user != null) {
-			user.setPassword(encoder.encode(user.getCode()));
-		}
 
 		assert user != null;
 		if(code.equals(userDetailsService.findByCode(code).getCode()) && code != null) {
@@ -94,10 +93,10 @@ public class AuthController {
 			SecurityContextHolder.getContext().setAuthentication(authentication);
 
 			//Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-			User username = userRepository.findByUsername(authentication.getName());
-
-			username.setCode(null);
-			userRepository.save(username);
+//			User username = userRepository.findByUsername(authentication.getName());
+//
+//			username.setCode(null);
+//			userRepository.save(username);
 
 			String jwt = jwtUtils.generateJwtToken(authentication);
 
@@ -161,22 +160,21 @@ public class AuthController {
 					.body(new MessageVo("Error: Username is already taken!"));
 		}
 
-		if (userRepository.existsByEmail(signUpRequest.getEmail())) {
-			return ResponseEntity
-					.badRequest()
-					.body(new MessageVo("Error: Email is already in use!"));
-		}
+//		if (userRepository.existsByEmail(signUpRequest.getEmail())) {
+//			return ResponseEntity
+//					.badRequest()
+//					.body(new MessageVo("Error: Email is already in use!"));
+//		}
 
-		log.info("Saving user: " + signUpRequest.getUsername() + " with e-mail: "
-				+ signUpRequest.getEmail() + " with Phone Number: " + signUpRequest.getPhone() +  " to the database");
+		log.info("Saving user: " + signUpRequest.getUsername()
+				+  " to the database");
 
 		Authentication auth = SecurityContextHolder.getContext().getAuthentication();
 
 		User username = userRepository.findByUsername(auth.getName());
+		username.setPassword(encoder.encode(username.getCode()));
+		username.setPhone(username.getUsername());
 		username.setUsername(signUpRequest.getUsername());
-		username.setEmail(signUpRequest.getEmail());
-		username.setPhone(signUpRequest.getPhone());
-		username.setPassword(encoder.encode(signUpRequest.getPassword()));
 		username.setBirthDate(signUpRequest.getBirthDate());
 		username.setCompleteName(signUpRequest.getCompleteName());
 		username.setWeight(signUpRequest.getWeight());
@@ -186,6 +184,7 @@ public class AuthController {
 		username.setHasAlzheimer(signUpRequest.getHasAlzheimer());
 
 		Set<String> strRoles = signUpRequest.getRole();
+		log.info("Role: " + strRoles);
 		Set<Role> roles = new HashSet<>();
 
 		if (strRoles == null) {
@@ -201,6 +200,7 @@ public class AuthController {
 						roles.add(adminRole);
 
 						break;
+
 					default:
 						Role userRole = roleRepository.findByName(RoleEnum.ROLE_USER)
 								.orElseThrow(() -> new RuntimeException("Error: Role was not found: " + roleRepository.findByName(RoleEnum.ROLE_USER)));
@@ -214,30 +214,31 @@ public class AuthController {
 		username.setUuid(UUID.randomUUID().toString().substring(0, 5));
 
 		username.setRoles(roles);
+
 		userRepository.save(username);
 
 		Authentication authentication = authenticationManager.authenticate(
-				new UsernamePasswordAuthenticationToken(signUpRequest.getUsername(), signUpRequest.getPassword()));
+				new UsernamePasswordAuthenticationToken(signUpRequest.getUsername(), username.getCode()));
+
 
 		SecurityContextHolder.getContext().setAuthentication(authentication);
 		String jwt = jwtUtils.generateJwtToken(authentication);
 
 		UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
-		List<String> rolesFree = userDetails.getAuthorities().stream()
+		List<String> role = userDetails.getAuthorities().stream()
 				.map(item -> item.getAuthority())
 				.collect(Collectors.toList());
 
 		log.info("There was a POST request to sign in from user {}" + signUpRequest.getUsername());
 		RefreshToken refreshToken = refreshTokenService.createRefreshToken(userDetails.getId());
 
-		User user = userRepository.findByUsername(auth.getName());
-
-		Optional<RefreshToken> byRefreshToken = refreshTokenRepository.findByToken(jwt);
+		username.setCode(null);
+		userRepository.save(username);
 
 		return ResponseEntity.ok(new JwtVo(jwt,
 				userDetails.getId(),
 				userDetails.getUsername(),
-				rolesFree, refreshToken.getToken()));
+				role, refreshToken.getToken()));
 	}
 
 	@PostMapping("/refreshtoken")

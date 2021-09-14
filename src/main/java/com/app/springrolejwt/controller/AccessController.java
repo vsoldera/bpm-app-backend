@@ -58,7 +58,6 @@ public class AccessController {
 		return ResponseEntity.ok(new UserDataVo(
 				userDetails.getUsername(),
 				userDetails.getCompleteName(),
-				userDetails.getEmail(),
 				roles,
 				userDetails.getBirthDate(),
 				userDetails.getWeight(),

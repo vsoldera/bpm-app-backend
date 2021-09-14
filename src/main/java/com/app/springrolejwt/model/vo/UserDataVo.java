@@ -22,10 +22,9 @@ public class UserDataVo {
     private Boolean hasAlzheimer;
     private String phone;
 
-    public UserDataVo(String username, String completeName, String email, List<String> roles, Date birthDate, Integer weight, Integer height, Boolean sex, Boolean isWheelchairUser, Boolean hasAlzheimer, String phone) {
+    public UserDataVo(String username, String completeName, List<String> roles, Date birthDate, Integer weight, Integer height, Boolean sex, Boolean isWheelchairUser, Boolean hasAlzheimer, String phone) {
         this.username = username;
         this.completeName = completeName;
-        this.email = email;
         this.roles = roles;
         this.birthDate = birthDate;
         this.weight = weight;

@@ -86,8 +86,8 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 	public static class ApiWebSecurityConfigurationAdapter extends WebSecurityConfigurerAdapter {
 		protected void configure(HttpSecurity http) throws Exception {
 			http
-					.antMatcher("/api/auth**")
-					.antMatcher("/api/get**")
+					.antMatcher("/api/auth/sendSMS**")
+					.antMatcher("/api/get/authCode**")
 					.httpBasic();
 		}
 	}

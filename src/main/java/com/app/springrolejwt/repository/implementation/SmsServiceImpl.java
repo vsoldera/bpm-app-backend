@@ -18,9 +18,8 @@ public class SmsServiceImpl {
     public static final String ACCOUNT_SID = "AC78158ea3f2947a31df767af743539a25";
     public static final String AUTH_TOKEN = "5cb1a761c0c85bbe600f4814bd262c71";
 
-    @Autowired
+
     AuthenticationManager authenticationManager;
-    @Autowired
     UserDetailsServiceImpl userDetailsService;
     @Autowired
     UserRepository userRepository;
@@ -32,13 +31,19 @@ public class SmsServiceImpl {
         log.info("User with phone number: " + phoneNumber);
         String token = generateToken();
 
+        if(userRepository.existsByPhone(phoneNumber))  {
+            User user = userRepository.findByPhone(phoneNumber);
+            user.setPassword(encoder.encode(token));
+            user.setCode(token);
+            userRepository.save(user);
+        } else {
+            User entity = new User();
+            entity.setUsername(phoneNumber);
+            entity.setPassword(encoder.encode(token));
+            entity.setCode(token);
+            userRepository.save(entity);
+        }
 
-        //User entity = userRepository.findByUsername(userDetailsService.findByPhone(phoneNumber).getPhone()).get();
-        User entity = new User();
-        entity.setUsername(phoneNumber);
-        entity.setPassword(encoder.encode(token));
-        entity.setCode(token);
-        userRepository.save(entity);
 
         return Message.creator(
                 new com.twilio.type.PhoneNumber(phoneNumber),

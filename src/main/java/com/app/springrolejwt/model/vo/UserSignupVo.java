@@ -19,17 +19,7 @@ public class UserSignupVo {
     @NotNull
     private String completeName;
 
-    @NotBlank
-    @Email
-    private String email;
-    
     private Set<String> role;
-
-    @ValidPhoneNumber
-    private String phone;
-    
-    @NotBlank
-    private String password;
 
     @NotBlank
     @NotNull

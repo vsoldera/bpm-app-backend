@@ -19,8 +19,7 @@ import java.util.UUID;
 @Entity
 @Table(	name = "users",
 		uniqueConstraints = { 
-			@UniqueConstraint(columnNames = "username"),
-			@UniqueConstraint(columnNames = "email")
+			@UniqueConstraint(columnNames = "username")
 		})
 @Data
 @AllArgsConstructor
@@ -40,11 +39,6 @@ public class User {
 	@NotBlank
 	@NotNull
 	private String uuid;
-
-	@NotBlank
-	@NotNull
-	@Email
-	private String email;
 
 	@NotBlank
 	@NotNull
@@ -95,13 +89,12 @@ public class User {
 	public User() {
 	}
 
-	public User(Long id, String username, String email, String phone, String password,
+	public User(Long id, String username, String phone, Set<Role> roles,
 				Date birthDate, String completeName, Integer weight, Integer height, Boolean sex,
 				Boolean isWheelchairUser, Boolean hasAlzheimer) {
 		this.id = id;
 		this.username = username;
-		this.email = email;
-		this.password = password;
+		this.roles = roles;
 		this.phone = phone;
 		this.birthDate = birthDate;
 		this.completeName = completeName;
@@ -112,12 +105,11 @@ public class User {
 		this.hasAlzheimer = hasAlzheimer;
 	}
 
-	public User(String username, String email, String phone, String password,
+	public User(String username, String phone, Set<Role> roles,
 				Date birthDate, String completeName, Integer weight, Integer height, Boolean sex,
 				Boolean isWheelchairUser, Boolean hasAlzheimer) {
 		this.username = username;
-		this.email = email;
-		this.password = password;
+		this.roles = roles;
 		this.phone = phone;
 		this.birthDate = birthDate;
 		this.completeName = completeName;
@@ -128,10 +120,8 @@ public class User {
 		this.hasAlzheimer = hasAlzheimer;
 	}
 
-	public User(String username, String email, String phone, String password, RefreshToken refreshToken, Boolean isRefreshActive) {
+	public User(String username, String phone, RefreshToken refreshToken, Boolean isRefreshActive) {
 		this.username = username;
-		this.email = email;
-		this.password = password;
 		this.phone = phone;
 		this.refreshToken = refreshToken;
 		this.isRefreshActive = isRefreshActive;
