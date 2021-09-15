@@ -80,11 +80,12 @@ public class AuthController {
 	public ResponseEntity<?> authSMS(@RequestParam String code, @RequestParam String phone) {
 		//Optional do find user by phone (userValidation)
 
-		log.info("Username: " + userDetailsService.findByCode(code).getUsername());
-		log.info("Password: " + userDetailsService.findByCode(code).getPassword());
+		//log.info("Username: " + userDetailsService.findByCode(code).getUsername());
+		//log.info("Password: " + userDetailsService.findByCode(code).getPassword());
 		User user = userDetailsService.findByPhone("+" + phone);
 
 		assert user != null;
+
 		if(code.equals(userDetailsService.findByCode(code).getCode()) && code != null) {
 			Authentication authentication = authenticationManager.authenticate(
 					new UsernamePasswordAuthenticationToken(userDetailsService.findByCode(code).getUsername(),
@@ -102,17 +103,29 @@ public class AuthController {
 
 			UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
 
+			if(userRepository.existsByIsRegistered(true)) {
+				user.setCode(null);
+				userRepository.save(user);
+			}
+
 			List<String> roles = userDetails.getAuthorities().stream()
 					.map(item -> item.getAuthority())
 					.collect(Collectors.toList());
 
 			//log.info("There was a POST request to sign in from user: " + userDetailsService.findByCode(code).getUsername());
+
+
+			if(refreshTokenRepository.existsByUserId(userDetails.getId())) {
+				refreshTokenRepository.deleteByUserId(userDetails.getId());
+			}
+
 			RefreshToken refreshToken = refreshTokenService.createRefreshToken(userDetails.getId());
 
 			//log.info("There was a POST request to sign in from user: " + userDetailsService.findByCode(code).getUsername());
 
-			//refreshTokenService.deleteByUserId(userDetails.getId());
 			userDetailsService.deleteCodeByPhone("+" + phone);
+
+
 
 			return ResponseEntity.ok(new JwtVo(jwt,
 					userDetails.getId(),
@@ -182,6 +195,7 @@ public class AuthController {
 		username.setSex(signUpRequest.getSex());
 		username.setIsWheelchairUser(signUpRequest.getIsWheelchairUser());
 		username.setHasAlzheimer(signUpRequest.getHasAlzheimer());
+		username.setIsRegistered(true);
 
 		Set<String> strRoles = signUpRequest.getRole();
 		log.info("Role: " + strRoles);
@@ -230,6 +244,11 @@ public class AuthController {
 				.collect(Collectors.toList());
 
 		log.info("There was a POST request to sign in from user {}" + signUpRequest.getUsername());
+
+		if(refreshTokenRepository.existsByUserId(username.getId())) {
+			refreshTokenRepository.deleteByUserId(username.getId());
+		}
+
 		RefreshToken refreshToken = refreshTokenService.createRefreshToken(userDetails.getId());
 
 		username.setCode(null);

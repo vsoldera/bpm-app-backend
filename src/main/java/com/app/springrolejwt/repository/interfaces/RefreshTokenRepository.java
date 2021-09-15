@@ -1,7 +1,6 @@
 package com.app.springrolejwt.repository.interfaces;
 
 import com.app.springrolejwt.model.RefreshToken;
-import com.app.springrolejwt.model.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 
@@ -13,6 +12,8 @@ public interface RefreshTokenRepository extends JpaRepository<RefreshToken, Long
     Optional<RefreshToken> findById(Long id);
 
     Optional<RefreshToken> findByToken(String token);
+
+    boolean existsByUserId(Long id);
 
     @Modifying
     int deleteByUserId(Long id);

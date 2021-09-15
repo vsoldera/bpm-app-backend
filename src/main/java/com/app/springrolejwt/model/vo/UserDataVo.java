@@ -12,7 +12,6 @@ import java.util.List;
 public class UserDataVo {
     private String username;
     private String completeName;
-    private String email;
     private List<String> roles;
     private Date birthDate;
     private Integer weight;

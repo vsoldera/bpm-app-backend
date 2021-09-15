@@ -24,6 +24,8 @@ public interface UserRepository extends JpaRepository<User, Long> {
 
 	Boolean existsByPhone(String phone);
 
+	Boolean existsByIsRegistered(Boolean option);
+
 //	@Query("UPDATE user SET username = username WHERE id = id")
 //	Optional<User> findQuestionDetails(@Param("username") String username);
 }

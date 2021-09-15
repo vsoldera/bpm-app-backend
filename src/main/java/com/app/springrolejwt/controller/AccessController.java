@@ -49,6 +49,7 @@ public class AccessController {
 	@GetMapping("/data")
 	@PreAuthorize("hasRole('USER') or hasRole('RESPONSIBLE')")
 	public ResponseEntity<?> userData(Authentication authentication) {
+
 		UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
 
 		List<String> roles = userDetails.getAuthorities().stream()
@@ -56,17 +57,16 @@ public class AccessController {
 				.collect(Collectors.toList());
 
 		return ResponseEntity.ok(new UserDataVo(
-				userDetails.getUsername(),
-				userDetails.getCompleteName(),
-				roles,
-				userDetails.getBirthDate(),
-				userDetails.getWeight(),
-				userDetails.getHeight(),
-				userDetails.getSex(),
-				userDetails.getIsWheelchairUser(),
-				userDetails.getHasAlzheimer(),
-				userDetails.getPhone()
-
+					userDetails.getUsername(),
+					userDetails.getCompleteName(),
+					roles,
+					userDetails.getBirthDate(),
+					userDetails.getWeight(),
+					userDetails.getHeight(),
+					userDetails.getSex(),
+					userDetails.getIsWheelchairUser(),
+					userDetails.getHasAlzheimer(),
+					userDetails.getPhone()
 				));
 	}
 }

@@ -8,6 +8,7 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
+import javax.validation.constraints.NotNull;
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
@@ -29,6 +30,9 @@ public class UserDetailsImpl implements UserDetails {
 	@JsonIgnore
 	private String password;
 
+	@NotNull
+	private String code;
+
 	private Collection<? extends GrantedAuthority> authorities;
 
 	private Date birthDate;
@@ -37,8 +41,7 @@ public class UserDetailsImpl implements UserDetails {
 	private Boolean sex;
 	private Boolean isWheelchairUser;
 	private Boolean hasAlzheimer;
-
-
+	private Boolean isRegistered;
 
 	public UserDetailsImpl(Long id, String username, String completeName, String phone, String password, Collection<? extends GrantedAuthority> authorities, Date birthDate, Integer weight, Integer height, Boolean sex, Boolean isWheelchairUser, Boolean hasAlzheimer) {
 		this.id = id;
