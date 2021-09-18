@@ -4,6 +4,7 @@ import com.app.springrolejwt.model.User;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.extern.log4j.Log4j2;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -16,6 +17,7 @@ import java.util.Objects;
 import java.util.stream.Collectors;
 
 @Data
+@Log4j2
 public class UserDetailsImpl implements UserDetails {
 	private static final long serialVersionUID = 1L;
 
@@ -59,16 +61,21 @@ public class UserDetailsImpl implements UserDetails {
 	}
 
 	public static UserDetailsImpl build(User user) {
+
+		if(user.getIsRegistered()) {
+			log.info("There was an error, user is already registered");
+		}
+
 		List<GrantedAuthority> authorities = user.getRoles().stream()
 				.map(role -> new SimpleGrantedAuthority(role.getName().name()))
 				.collect(Collectors.toList());
 
 		return new UserDetailsImpl(
-				user.getId(), 
+				user.getId(),
 				user.getUsername(),
 				user.getCompleteName(),
 				user.getPhone(),
-				user.getPassword(), 
+				user.getPassword(),
 				authorities,
 				user.getBirthDate(),
 				user.getWeight(),

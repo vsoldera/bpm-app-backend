@@ -36,7 +36,14 @@ public class SmsServiceImpl {
             user.setPassword(encoder.encode(token));
             user.setCode(token);
             userRepository.save(user);
-        } else {
+        } else
+            if(userRepository.existsByUsername(phoneNumber)) {
+                User user = userRepository.findByUsername(phoneNumber);
+                user.setPassword(encoder.encode(token));
+                user.setCode(token);
+                userRepository.save(user);
+            }
+            else {
             User entity = new User();
             entity.setUsername(phoneNumber);
             entity.setPassword(encoder.encode(token));
