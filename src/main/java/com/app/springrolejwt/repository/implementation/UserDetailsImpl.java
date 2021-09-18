@@ -62,10 +62,6 @@ public class UserDetailsImpl implements UserDetails {
 
 	public static UserDetailsImpl build(User user) {
 
-		if(user.getIsRegistered()) {
-			log.info("There was an error, user is already registered");
-		}
-
 		List<GrantedAuthority> authorities = user.getRoles().stream()
 				.map(role -> new SimpleGrantedAuthority(role.getName().name()))
 				.collect(Collectors.toList());

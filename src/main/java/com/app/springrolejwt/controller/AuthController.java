@@ -80,8 +80,6 @@ public class AuthController {
 	public ResponseEntity<?> authSMS(@RequestParam String code, @RequestParam String phone) {
 		//Optional do find user by phone (userValidation)
 
-		//log.info("Username: " + userDetailsService.findByCode(code).getUsername());
-		//log.info("Password: " + userDetailsService.findByCode(code).getPassword());
 		User user = userDetailsService.findByPhone("+" + phone);
 
 		assert user != null;
@@ -90,14 +88,6 @@ public class AuthController {
 			Authentication authentication = authenticationManager.authenticate(
 					new UsernamePasswordAuthenticationToken(userDetailsService.findByCode(code).getUsername(),
 							userDetailsService.findByCode(code).getCode()));
-
-			SecurityContextHolder.getContext().setAuthentication(authentication);
-
-			//Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-//			User username = userRepository.findByUsername(authentication.getName());
-//
-//			username.setCode(null);
-//			userRepository.save(username);
 
 			String jwt = jwtUtils.generateJwtToken(authentication);
 
@@ -112,20 +102,12 @@ public class AuthController {
 					.map(item -> item.getAuthority())
 					.collect(Collectors.toList());
 
-			//log.info("There was a POST request to sign in from user: " + userDetailsService.findByCode(code).getUsername());
-
-
 			if(refreshTokenRepository.existsByUserId(userDetails.getId())) {
 				refreshTokenRepository.deleteByUserId(userDetails.getId());
 			}
 
 			RefreshToken refreshToken = refreshTokenService.createRefreshToken(userDetails.getId());
-
-			//log.info("There was a POST request to sign in from user: " + userDetailsService.findByCode(code).getUsername());
-
 			userDetailsService.deleteCodeByPhone("+" + phone);
-
-
 
 			return ResponseEntity.ok(new JwtVo(jwt,
 					userDetails.getId(),
@@ -139,125 +121,126 @@ public class AuthController {
 				.body(new MessageVo("Error: Auth failed!"));
 	}
 
-	@PostMapping("/signin")
-	public ResponseEntity<?> authenticateUser(@Valid @RequestBody UserLoginVo loginRequest) {
-
-		Authentication authentication = authenticationManager.authenticate(
-				new UsernamePasswordAuthenticationToken(loginRequest.getUsername(), loginRequest.getPassword()));
-
-		SecurityContextHolder.getContext().setAuthentication(authentication);
-		String jwt = jwtUtils.generateJwtToken(authentication);
-
-		UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
-		List<String> roles = userDetails.getAuthorities().stream()
-				.map(item -> item.getAuthority())
-				.collect(Collectors.toList());
-
-		log.info("There was a POST request to sign in from user {}" + loginRequest.getUsername());
-		RefreshToken refreshToken = refreshTokenService.createRefreshToken(userDetails.getId());
-
-		return ResponseEntity.ok(new JwtVo(jwt,
-												 userDetails.getId(),
-												 userDetails.getUsername(),
-												 roles, refreshToken.getToken()));
-	}
+//	@PostMapping("/signin")
+//	public ResponseEntity<?> authenticateUser(@Valid @RequestBody UserLoginVo loginRequest) {
+//
+//		Authentication authentication = authenticationManager.authenticate(
+//				new UsernamePasswordAuthenticationToken(loginRequest.getUsername(), loginRequest.getPassword()));
+//
+//		SecurityContextHolder.getContext().setAuthentication(authentication);
+//		String jwt = jwtUtils.generateJwtToken(authentication);
+//
+//		UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
+//		List<String> roles = userDetails.getAuthorities().stream()
+//				.map(item -> item.getAuthority())
+//				.collect(Collectors.toList());
+//
+//		log.info("There was a POST request to sign in from user {}" + loginRequest.getUsername());
+//		RefreshToken refreshToken = refreshTokenService.createRefreshToken(userDetails.getId());
+//
+//		return ResponseEntity.ok(new JwtVo(jwt,
+//												 userDetails.getId(),
+//												 userDetails.getUsername(),
+//												 roles, refreshToken.getToken()));
+//	}
 
 	@PostMapping("/signup")
 	@Transactional
 	public ResponseEntity<?> registerUser(@Valid @RequestBody UserSignupVo signUpRequest) {
-
-
-		if (userRepository.existsByUsername(signUpRequest.getUsername())) {
-			return ResponseEntity
-					.badRequest()
-					.body(new MessageVo("Error: Username is already taken!"));
-		}
-
-//		if (userRepository.existsByEmail(signUpRequest.getEmail())) {
-//			return ResponseEntity
-//					.badRequest()
-//					.body(new MessageVo("Error: Email is already in use!"));
-//		}
-
-		log.info("Saving user: " + signUpRequest.getUsername()
-				+  " to the database");
-
 		Authentication auth = SecurityContextHolder.getContext().getAuthentication();
 
 		User username = userRepository.findByUsername(auth.getName());
-		username.setPassword(encoder.encode(username.getCode()));
-		username.setPhone(username.getUsername());
-		username.setUsername(signUpRequest.getUsername());
-		username.setBirthDate(signUpRequest.getBirthDate());
-		username.setCompleteName(signUpRequest.getCompleteName());
-		username.setWeight(signUpRequest.getWeight());
-		username.setHeight(signUpRequest.getHeight());
-		username.setSex(signUpRequest.getSex());
-		username.setIsWheelchairUser(signUpRequest.getIsWheelchairUser());
-		username.setHasAlzheimer(signUpRequest.getHasAlzheimer());
-		username.setIsRegistered(true);
 
-		Set<String> strRoles = signUpRequest.getRole();
-		log.info("Role: " + strRoles);
-		Set<Role> roles = new HashSet<>();
+		if (userRepository.existsByUsername((username.getUsername()))) {
+			log.info("Updating infos from user: " + username.getUsername()
+					+  " to the database" + "Encrypting code: " + username.getCode());
 
-		if (strRoles == null) {
-			Role userRole = roleRepository.findByName(RoleEnum.ROLE_USER)
-					.orElseThrow(() -> new RuntimeException("Error: Role was not found."));
-			roles.add(userRole);
-		} else {
-			strRoles.forEach(role -> {
-				switch (role) {
-					case "responsible":
-						Role adminRole = roleRepository.findByName(RoleEnum.ROLE_RESPONSIBLE)
-								.orElseThrow(() -> new RuntimeException("Error: Role was not found: " + roleRepository.findByName(RoleEnum.ROLE_RESPONSIBLE)));
-						roles.add(adminRole);
+			if(username.getIsRegistered()) {
+				username.setPhone(username.getUsername());
+				username.setBirthDate(signUpRequest.getBirthDate());
+				username.setCompleteName(signUpRequest.getCompleteName());
+				username.setWeight(signUpRequest.getWeight());
+				username.setHeight(signUpRequest.getHeight());
+				username.setSex(signUpRequest.getSex());
+				username.setIsWheelchairUser(signUpRequest.getIsWheelchairUser());
+				username.setHasAlzheimer(signUpRequest.getHasAlzheimer());
+			}
+			else {
+				username.setPassword(encoder.encode(username.getCode()));
+				username.setPhone(username.getUsername());
+				username.setBirthDate(signUpRequest.getBirthDate());
+				username.setCompleteName(signUpRequest.getCompleteName());
+				username.setWeight(signUpRequest.getWeight());
+				username.setHeight(signUpRequest.getHeight());
+				username.setSex(signUpRequest.getSex());
+				username.setIsWheelchairUser(signUpRequest.getIsWheelchairUser());
+				username.setHasAlzheimer(signUpRequest.getHasAlzheimer());
+				username.setIsRegistered(true);
+			}
 
-						break;
+			Set<String> strRoles = signUpRequest.getRole();
+			log.info("Role: " + strRoles);
+			Set<Role> roles = new HashSet<>();
 
-					default:
-						Role userRole = roleRepository.findByName(RoleEnum.ROLE_USER)
-								.orElseThrow(() -> new RuntimeException("Error: Role was not found: " + roleRepository.findByName(RoleEnum.ROLE_USER)));
-						roles.add(userRole);
-				}
-			});
+			if (strRoles == null) {
+				Role userRole = roleRepository.findByName(RoleEnum.ROLE_USER)
+						.orElseThrow(() -> new RuntimeException("Error: Role was not found."));
+				roles.add(userRole);
+			} else {
+				strRoles.forEach(role -> {
+					switch (role) {
+						case "responsible":
+							Role adminRole = roleRepository.findByName(RoleEnum.ROLE_RESPONSIBLE)
+									.orElseThrow(() -> new RuntimeException("Error: Role was not found: " + roleRepository.findByName(RoleEnum.ROLE_RESPONSIBLE)));
+							roles.add(adminRole);
+
+							break;
+
+						default:
+							Role userRole = roleRepository.findByName(RoleEnum.ROLE_USER)
+									.orElseThrow(() -> new RuntimeException("Error: Role was not found: " + roleRepository.findByName(RoleEnum.ROLE_USER)));
+							roles.add(userRole);
+					}
+				});
+			}
+
+			log.info("There was a POST request to sign up from user {}" + username.getUsername());
+
+			username.setUuid(UUID.randomUUID().toString().substring(0, 5));
+
+			username.setRoles(roles);
+
+			userRepository.save(username);
+
+			Authentication authentication = authenticationManager.authenticate(
+					new UsernamePasswordAuthenticationToken(username.getUsername(), username.getCode()));
+
+
+			SecurityContextHolder.getContext().setAuthentication(authentication);
+			String jwt = jwtUtils.generateJwtToken(authentication);
+
+			UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
+			List<String> role = userDetails.getAuthorities().stream()
+					.map(item -> item.getAuthority())
+					.collect(Collectors.toList());
+
+			log.info("There was a POST request to sign in from user {}" + username.getUsername());
+
+			if(refreshTokenRepository.existsByUserId(username.getId())) {
+				refreshTokenRepository.deleteByUserId(username.getId());
+			}
+
+			RefreshToken refreshToken = refreshTokenService.createRefreshToken(userDetails.getId());
+
+			return ResponseEntity.ok(new JwtVo(jwt,
+					userDetails.getId(),
+					userDetails.getUsername(),
+					role, refreshToken.getToken()));
 		}
 
-		log.info("There was a POST request to sign up from user {}" + signUpRequest.getUsername());
-
-		username.setUuid(UUID.randomUUID().toString().substring(0, 5));
-
-		username.setRoles(roles);
-
-		userRepository.save(username);
-
-		Authentication authentication = authenticationManager.authenticate(
-				new UsernamePasswordAuthenticationToken(signUpRequest.getUsername(), username.getCode()));
-
-
-		SecurityContextHolder.getContext().setAuthentication(authentication);
-		String jwt = jwtUtils.generateJwtToken(authentication);
-
-		UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
-		List<String> role = userDetails.getAuthorities().stream()
-				.map(item -> item.getAuthority())
-				.collect(Collectors.toList());
-
-		log.info("There was a POST request to sign in from user {}" + signUpRequest.getUsername());
-
-		if(refreshTokenRepository.existsByUserId(username.getId())) {
-			refreshTokenRepository.deleteByUserId(username.getId());
-		}
-
-		RefreshToken refreshToken = refreshTokenService.createRefreshToken(userDetails.getId());
-
-		username.setCode(null);
-		userRepository.save(username);
-
-		return ResponseEntity.ok(new JwtVo(jwt,
-				userDetails.getId(),
-				userDetails.getUsername(),
-				role, refreshToken.getToken()));
+		return ResponseEntity
+				.badRequest()
+				.body(new MessageVo("Error: Username is already taken!"));
 	}
 
 	@PostMapping("/refreshtoken")

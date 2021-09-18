@@ -1,17 +1,14 @@
 package com.app.springrolejwt.model.vo;
 
-import com.app.springrolejwt.model.vo.validation.ValidPhoneNumber;
 import lombok.Data;
 
-import javax.validation.constraints.Email;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
-import javax.validation.constraints.Size;
 import java.util.Date;
 import java.util.Set;
 
 @Data
-public class UserSignupVo {
+public class UserUpdateVo {
 
     @NotBlank
     @NotNull
@@ -42,5 +39,4 @@ public class UserSignupVo {
     @NotBlank
     @NotNull
     private Boolean hasAlzheimer;
-
 }
