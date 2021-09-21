@@ -29,44 +29,34 @@ public class User {
 	private Long id;
 
 	@NotBlank
-	@NotNull
 	private String username;
 
 	@NotBlank
-	@NotNull
 	private String completeName;
 
 	@NotBlank
-	@NotNull
 	private String uuid;
 
 	@NotBlank
-	@NotNull
 	private String password;
 
 	@NotBlank
-	@NotNull
 	private Date birthDate;
 
 	@NotBlank
-	@NotNull
 	private Integer weight;
 
 	@NotBlank
-	@NotNull
 	private Integer height;
 
 	@NotBlank
-	@NotNull
 	//Is this politically correct?
 	private Boolean sex;
 
 	@NotBlank
-	@NotNull
 	private Boolean isWheelchairUser;
 
 	@NotBlank
-	@NotNull
 	private Boolean hasAlzheimer;
 
 	@NotNull

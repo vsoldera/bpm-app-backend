@@ -71,7 +71,7 @@ public class AuthController {
 	@PostMapping("/sendSMS")
 	@Transactional
 	public Message sendSMS(@RequestParam String phoneNumber) {
-		log.info("There was a POST request to sign in using phone {}" + phoneNumber);
+		log.info("There was a POST request to sign in using phone " + phoneNumber);
 		return smsService.sendSms("+" + phoneNumber);
 	}
 
@@ -83,7 +83,6 @@ public class AuthController {
 		User user = userDetailsService.findByPhone("+" + phone);
 
 		assert user != null;
-
 		if(code.equals(userDetailsService.findByCode(code).getCode()) && code != null) {
 			Authentication authentication = authenticationManager.authenticate(
 					new UsernamePasswordAuthenticationToken(userDetailsService.findByCode(code).getUsername(),

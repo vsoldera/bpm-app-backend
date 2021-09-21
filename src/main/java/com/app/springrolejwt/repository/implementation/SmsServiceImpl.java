@@ -44,12 +44,12 @@ public class SmsServiceImpl {
                 userRepository.save(user);
             }
             else {
-            User entity = new User();
-            entity.setUsername(phoneNumber);
-            entity.setPassword(encoder.encode(token));
-            entity.setCode(token);
-            userRepository.save(entity);
-        }
+                User entity = new User();
+                entity.setUsername(phoneNumber);
+                entity.setPassword(encoder.encode(token));
+                entity.setCode(token);
+                userRepository.save(entity);
+            }
 
 
         return Message.creator(
