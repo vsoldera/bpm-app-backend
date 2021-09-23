@@ -29,8 +29,11 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.provider.OAuth2Authentication;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+import javax.validation.ConstraintViolation;
+import javax.validation.ConstraintViolationException;
 import javax.validation.Valid;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -80,10 +83,9 @@ public class AuthController {
 	public ResponseEntity<?> authSMS(@RequestParam String code, @RequestParam String phone) {
 		//Optional do find user by phone (userValidation)
 
-		User user = userDetailsService.findByPhone("+" + phone);
+		Optional<User> user = userRepository.findByUsername("+" + phone);
 
-		assert user != null;
-		if(code.equals(userDetailsService.findByCode(code).getCode()) && code != null) {
+		if (code.equals(userDetailsService.findByCode(code).getCode()) && code.equals(userDetailsService.findByUsername("+" + phone).getCode()) && code != null) {
 			Authentication authentication = authenticationManager.authenticate(
 					new UsernamePasswordAuthenticationToken(userDetailsService.findByCode(code).getUsername(),
 							userDetailsService.findByCode(code).getCode()));
@@ -92,16 +94,16 @@ public class AuthController {
 
 			UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
 
-			if(userRepository.existsByIsRegistered(true)) {
-				user.setCode(null);
-				userRepository.save(user);
+			if (userRepository.existsByIsRegistered(true)) {
+				user.get().setCode(null);
+				userRepository.save(user.get());
 			}
 
 			List<String> roles = userDetails.getAuthorities().stream()
 					.map(item -> item.getAuthority())
 					.collect(Collectors.toList());
 
-			if(refreshTokenRepository.existsByUserId(userDetails.getId())) {
+			if (refreshTokenRepository.existsByUserId(userDetails.getId())) {
 				refreshTokenRepository.deleteByUserId(userDetails.getId());
 			}
 
@@ -117,8 +119,9 @@ public class AuthController {
 
 		return ResponseEntity
 				.badRequest()
-				.body(new MessageVo("Error: Auth failed!"));
+				.body(new MessageVo("Por favor, digite um código válido!"));
 	}
+
 
 //	@PostMapping("/signin")
 //	public ResponseEntity<?> authenticateUser(@Valid @RequestBody UserLoginVo loginRequest) {
@@ -145,36 +148,37 @@ public class AuthController {
 
 	@PostMapping("/signup")
 	@Transactional
-	public ResponseEntity<?> registerUser(@Valid @RequestBody UserSignupVo signUpRequest) {
+	public ResponseEntity<?> registerUser(@Validated @RequestBody UserSignupVo signUpRequest) {
+
 		Authentication auth = SecurityContextHolder.getContext().getAuthentication();
 
-		User username = userRepository.findByUsername(auth.getName());
+		Optional<User> username = userRepository.findByUsername(auth.getName());
 
-		if (userRepository.existsByUsername((username.getUsername()))) {
-			log.info("Updating infos from user: " + username.getUsername()
-					+  " to the database" + "Encrypting code: " + username.getCode());
+		if (userRepository.existsByUsername((username.get().getUsername()))) {
+			log.info("Updating infos from user: " + username.get().getUsername()
+					+  " to the database" + "Encrypting code: " + username.get().getCode());
 
-			if(username.getIsRegistered()) {
-				username.setPhone(username.getUsername());
-				username.setBirthDate(signUpRequest.getBirthDate());
-				username.setCompleteName(signUpRequest.getCompleteName());
-				username.setWeight(signUpRequest.getWeight());
-				username.setHeight(signUpRequest.getHeight());
-				username.setSex(signUpRequest.getSex());
-				username.setIsWheelchairUser(signUpRequest.getIsWheelchairUser());
-				username.setHasAlzheimer(signUpRequest.getHasAlzheimer());
+			if(username.get().getIsRegistered()) {
+				username.get().setPhone(username.get().getUsername());
+				username.get().setBirthDate(signUpRequest.getBirthDate());
+				username.get().setCompleteName(signUpRequest.getCompleteName());
+				username.get().setWeight(signUpRequest.getWeight());
+				username.get().setHeight(signUpRequest.getHeight());
+				username.get().setSex(signUpRequest.getSex());
+				username.get().setIsWheelchairUser(signUpRequest.getIsWheelchairUser());
+				username.get().setHasAlzheimer(signUpRequest.getHasAlzheimer());
 			}
 			else {
-				username.setPassword(encoder.encode(username.getCode()));
-				username.setPhone(username.getUsername());
-				username.setBirthDate(signUpRequest.getBirthDate());
-				username.setCompleteName(signUpRequest.getCompleteName());
-				username.setWeight(signUpRequest.getWeight());
-				username.setHeight(signUpRequest.getHeight());
-				username.setSex(signUpRequest.getSex());
-				username.setIsWheelchairUser(signUpRequest.getIsWheelchairUser());
-				username.setHasAlzheimer(signUpRequest.getHasAlzheimer());
-				username.setIsRegistered(true);
+				username.get().setPassword(encoder.encode(username.get().getCode()));
+				username.get().setPhone(username.get().getUsername());
+				username.get().setBirthDate(signUpRequest.getBirthDate());
+				username.get().setCompleteName(signUpRequest.getCompleteName());
+				username.get().setWeight(signUpRequest.getWeight());
+				username.get().setHeight(signUpRequest.getHeight());
+				username.get().setSex(signUpRequest.getSex());
+				username.get().setIsWheelchairUser(signUpRequest.getIsWheelchairUser());
+				username.get().setHasAlzheimer(signUpRequest.getHasAlzheimer());
+				username.get().setIsRegistered(true);
 			}
 
 			Set<String> strRoles = signUpRequest.getRole();
@@ -203,16 +207,16 @@ public class AuthController {
 				});
 			}
 
-			log.info("There was a POST request to sign up from user {}" + username.getUsername());
+			log.info("There was a POST request to sign up from user {}" + username.get().getUsername());
 
-			username.setUuid(UUID.randomUUID().toString().substring(0, 5));
+			username.get().setUuid(UUID.randomUUID().toString().substring(0, 5));
 
-			username.setRoles(roles);
+			username.get().setRoles(roles);
 
-			userRepository.save(username);
+			userRepository.save(username.get());
 
 			Authentication authentication = authenticationManager.authenticate(
-					new UsernamePasswordAuthenticationToken(username.getUsername(), username.getCode()));
+					new UsernamePasswordAuthenticationToken(username.get().getUsername(), username.get().getCode()));
 
 
 			SecurityContextHolder.getContext().setAuthentication(authentication);
@@ -223,10 +227,10 @@ public class AuthController {
 					.map(item -> item.getAuthority())
 					.collect(Collectors.toList());
 
-			log.info("There was a POST request to sign in from user {}" + username.getUsername());
+			log.info("There was a POST request to sign in from user {}" + username.get().getUsername());
 
-			if(refreshTokenRepository.existsByUserId(username.getId())) {
-				refreshTokenRepository.deleteByUserId(username.getId());
+			if(refreshTokenRepository.existsByUserId(username.get().getId())) {
+				refreshTokenRepository.deleteByUserId(username.get().getId());
 			}
 
 			RefreshToken refreshToken = refreshTokenService.createRefreshToken(userDetails.getId());

@@ -12,6 +12,8 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.Optional;
+
 @Service
 @Log4j2
 public class SmsServiceImpl {
@@ -32,16 +34,17 @@ public class SmsServiceImpl {
         String token = generateToken();
 
         if(userRepository.existsByPhone(phoneNumber))  {
-            User user = userRepository.findByPhone(phoneNumber);
-            user.setPassword(encoder.encode(token));
-            user.setCode(token);
-            userRepository.save(user);
+            Optional<User> user = userRepository.findByPhone(phoneNumber);
+
+            user.get().setPassword(encoder.encode(token));
+            user.get().setCode(token);
+            userRepository.save(user.get());
         } else
             if(userRepository.existsByUsername(phoneNumber)) {
-                User user = userRepository.findByUsername(phoneNumber);
-                user.setPassword(encoder.encode(token));
-                user.setCode(token);
-                userRepository.save(user);
+                Optional<User> user = userRepository.findByUsername(phoneNumber);
+                user.get().setPassword(encoder.encode(token));
+                user.get().setCode(token);
+                userRepository.save(user.get());
             }
             else {
                 User entity = new User();

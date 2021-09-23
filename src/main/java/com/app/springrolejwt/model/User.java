@@ -28,42 +28,29 @@ public class User {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
 
-	@NotBlank
 	private String username;
 
-	@NotBlank
 	private String completeName;
 
-	@NotBlank
 	private String uuid;
 
-	@NotBlank
 	private String password;
 
-	@NotBlank
 	private Date birthDate;
 
-	@NotBlank
 	private Integer weight;
 
-	@NotBlank
 	private Integer height;
 
-	@NotBlank
 	//Is this politically correct?
 	private Boolean sex;
 
-	@NotBlank
 	private Boolean isWheelchairUser;
 
-	@NotBlank
 	private Boolean hasAlzheimer;
 
-	@NotNull
-	@NotBlank
 	private String phone;
 
-	@NotNull
 	private String code;
 
 	private Boolean isRegistered = false;

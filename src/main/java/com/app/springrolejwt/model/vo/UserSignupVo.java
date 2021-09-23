@@ -1,46 +1,42 @@
 package com.app.springrolejwt.model.vo;
 
 import com.app.springrolejwt.model.vo.validation.ValidPhoneNumber;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.Data;
+import org.hibernate.validator.constraints.NotBlank;
+import org.springframework.validation.annotation.Validated;
 
-import javax.validation.constraints.Email;
-import javax.validation.constraints.NotBlank;
+import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
-import javax.validation.constraints.Size;
 import java.util.Date;
 import java.util.Set;
 
 @Data
+@JsonIgnoreProperties(ignoreUnknown = false)
 public class UserSignupVo {
 
-    @NotBlank
-    @NotNull
+    @NotBlank(message = "Por favor, preencha o campo de nome")
+    @NotNull(message = "Por favor, preencha o campo de nome")
     private String completeName;
 
     private Set<String> role;
 
-    @NotBlank
-    @NotNull
+    @NotNull(message = "Por favor, preencha o campo data")
     private Date birthDate;
 
-    @NotBlank
-    @NotNull
+    @NotNull(message = "Por favor, preencha o campo peso")
     private Integer weight;
 
-    @NotBlank
-    @NotNull
+    @NotNull(message = "Por favor, preencha o campo altura")
     private Integer height;
 
-    @NotBlank
-    @NotNull
+    @NotNull(message = "Por favor, preencha o campo sexo")
     private Boolean sex;
 
-    @NotBlank
-    @NotNull
+    @NotNull(message = "Por favor, preencha o campo de cadeirante")
     private Boolean isWheelchairUser;
 
-    @NotBlank
-    @NotNull
+    @NotNull(message = "Por favor, preencha o campo de alzheimer")
     private Boolean hasAlzheimer;
 
 }

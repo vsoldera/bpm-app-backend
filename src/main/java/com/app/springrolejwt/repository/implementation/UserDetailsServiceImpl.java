@@ -5,11 +5,13 @@ import com.app.springrolejwt.model.RefreshToken;
 import com.app.springrolejwt.model.User;
 import com.app.springrolejwt.repository.interfaces.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.Optional;
 
@@ -22,13 +24,22 @@ public class UserDetailsServiceImpl implements UserDetailsService {
 	@Override
 	@Transactional
 	public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-		User user = userRepository.findByUsername(username);
+		Optional<User> user = userRepository.findByUsername(username);
 
-		return UserDetailsImpl.build(user);
+		return UserDetailsImpl.build(user.get());
 	}
 
-	public User findByPhone(String phoneNumber) {
-		return userRepository.findByPhone(phoneNumber);
+	public Optional<User> findByPhone(String phoneNumber) {
+		Optional<User> userCode =  userRepository.findByPhone(phoneNumber);
+
+		return userCode;
+	}
+
+	public User findByUsername(String username) {
+		User user =  userRepository.findByUsername(username).orElseThrow(() ->
+				new ResponseStatusException(HttpStatus.BAD_REQUEST, "O usuário não existe. Tente novamente!"));
+
+		return user;
 	}
 
 	public Long findIdByUsername(String username) {
@@ -36,7 +47,10 @@ public class UserDetailsServiceImpl implements UserDetailsService {
 	}
 
 	public User findByCode(String code) {
-		return userRepository.findByCode(code);
+		User userCode =  userRepository.findByCode(code).orElseThrow(() ->
+				new ResponseStatusException(HttpStatus.BAD_REQUEST, "O código é inválido. Tente novamente!"));
+
+		return userCode;
 	}
 
 	public String deleteCodeByPhone(String phone) {
