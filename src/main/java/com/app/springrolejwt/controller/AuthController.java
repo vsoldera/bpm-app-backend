@@ -7,6 +7,7 @@ import com.app.springrolejwt.model.vo.tokenVos.TokenRefreshRequest;
 import com.app.springrolejwt.model.vo.tokenVos.TokenRefreshResponse;
 import com.app.springrolejwt.model.vo.userVos.UserSignupVo;
 import com.app.springrolejwt.repository.implementation.*;
+import com.app.springrolejwt.repository.interfaces.HealthRepository;
 import org.springframework.security.core.Authentication;
 import com.app.springrolejwt.model.User;
 import com.app.springrolejwt.model.enums.RoleEnum;
@@ -55,6 +56,9 @@ public class AuthController {
 	RoleRepository roleRepository;
 
 	@Autowired
+	HealthRepository healthRepository;
+
+	@Autowired
 	PasswordEncoder encoder;
 
 	@Autowired
@@ -98,10 +102,10 @@ public class AuthController {
 
 			UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
 
-			if (userRepository.existsByIsRegistered(true)) {
-				user.get().setCode(null);
-				userRepository.save(user.get());
-			}
+//			if (userRepository.existsByIsRegistered(true)) {
+//				user.get().setCode(null);
+//				userRepository.save(user.get());
+//			}
 
 			List<String> roles = userDetails.getAuthorities().stream()
 					.map(item -> item.getAuthority())
@@ -164,6 +168,7 @@ public class AuthController {
 			log.info("Updating infos from user: " + username.get().getUsername()
 					+  " to the database" + "Encrypting code: " + username.get().getCode());
 
+
 			if(username.get().getIsRegistered()) {
 				username.get().setPhone(username.get().getUsername());
 				username.get().setBirthDate(signUpRequest.getBirthDate());
@@ -174,7 +179,8 @@ public class AuthController {
 				username.get().setIsWheelchairUser(signUpRequest.getIsWheelchairUser());
 				username.get().setHasAlzheimer(signUpRequest.getHasAlzheimer());
 			} else {
-				username.get().setPassword(encoder.encode(username.get().getCode()));
+				//dar uma olhada aqui
+				//username.get().setPassword(encoder.encode(username.get().getCode()));
 				username.get().setPhone(username.get().getUsername());
 				username.get().setBirthDate(signUpRequest.getBirthDate());
 				username.get().setCompleteName(signUpRequest.getCompleteName());
@@ -184,6 +190,7 @@ public class AuthController {
 				username.get().setIsWheelchairUser(signUpRequest.getIsWheelchairUser());
 				username.get().setHasAlzheimer(signUpRequest.getHasAlzheimer());
 				username.get().setIsRegistered(true);
+				username.get().setPassword(encoder.encode(username.get().getCode()));
 			}
 
 			Set<String> strRoles = signUpRequest.getRole();

@@ -89,14 +89,4 @@ public class AccessController {
 				));
 	}
 
-//	@PostMapping("/addContacts")
-//	@Transactional
-//	@PreAuthorize("hasRole('USER') or hasRole('RESPONSIBLE')")
-//	public ResponseEntity<?> addContacts(@RequestParam String uuid, @RequestBody UserHealthVo userHealthVo) {
-//
-//
-//
-//	}
-
-
 }

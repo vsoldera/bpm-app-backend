@@ -1,7 +1,9 @@
 package com.app.springrolejwt.repository.implementation;
 
 import com.app.springrolejwt.config.WebSecurityConfig;
+import com.app.springrolejwt.model.Health;
 import com.app.springrolejwt.model.User;
+import com.app.springrolejwt.repository.interfaces.HealthRepository;
 import com.app.springrolejwt.repository.interfaces.UserRepository;
 import com.twilio.Twilio;
 import com.twilio.rest.api.v2010.account.Message;
@@ -28,6 +30,10 @@ public class SmsServiceImpl {
     UserDetailsServiceImpl userDetailsService;
     @Autowired
     UserRepository userRepository;
+
+    @Autowired
+    HealthRepository healthRepository;
+
     @Autowired
     PasswordEncoder encoder;
 
@@ -56,7 +62,10 @@ public class SmsServiceImpl {
                 entity.setUsername(phoneNumber);
                 entity.setPassword(encoder.encode(token));
                 entity.setUuid("@" + UUID.randomUUID().toString().substring(0, 5).toUpperCase());
+                Health health = new Health();
+                health.setUuid(entity.getUuid());
                 entity.setCode(token);
+                healthRepository.save(health);
                 userRepository.save(entity);
             }
 
