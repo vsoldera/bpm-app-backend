@@ -12,10 +12,12 @@ public class JwtVo {
 	private Long id;
 	private String username;
 	private List<String> roles;
+	private String uuid;
 
-	public JwtVo(String accessToken, Long id, String username, List<String> roles, String refreshToken) {
+	public JwtVo(String accessToken, Long id, String uuid, String username, List<String> roles, String refreshToken) {
 		this.token = accessToken;
 		this.id = id;
+		this.uuid = uuid;
 		this.username = username;
 		this.roles = roles;
 		this.refreshToken = refreshToken;

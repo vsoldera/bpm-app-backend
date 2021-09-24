@@ -1,4 +1,4 @@
-package com.app.springrolejwt.model.vo;
+package com.app.springrolejwt.model.vo.userVos;
 
 import com.app.springrolejwt.model.vo.validation.ValidPhoneNumber;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
@@ -16,7 +16,7 @@ import java.util.Set;
 public class UserSignupVo {
 
     @NotBlank(message = "Por favor, preencha o campo de nome")
-    @NotNull(message = "Por favor, preencha o campo de nome")
+    @NotNull(message = "Por favor, preencha o campo nome")
     private String completeName;
 
     private Set<String> role;
@@ -31,7 +31,7 @@ public class UserSignupVo {
     private Integer height;
 
     @NotNull(message = "Por favor, preencha o campo sexo")
-    private Boolean sex;
+    private String sex;
 
     @NotNull(message = "Por favor, preencha o campo de cadeirante")
     private Boolean isWheelchairUser;

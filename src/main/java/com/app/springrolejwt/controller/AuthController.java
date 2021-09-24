@@ -1,40 +1,35 @@
 package com.app.springrolejwt.controller;
 
-import com.app.springrolejwt.config.WebSecurityConfig;
+import com.app.springrolejwt.model.Health;
 import com.app.springrolejwt.model.RefreshToken;
 import com.app.springrolejwt.model.Role;
+import com.app.springrolejwt.model.vo.tokenVos.TokenRefreshRequest;
+import com.app.springrolejwt.model.vo.tokenVos.TokenRefreshResponse;
+import com.app.springrolejwt.model.vo.userVos.UserSignupVo;
+import com.app.springrolejwt.repository.implementation.*;
 import org.springframework.security.core.Authentication;
 import com.app.springrolejwt.model.User;
 import com.app.springrolejwt.model.enums.RoleEnum;
 import com.app.springrolejwt.model.vo.*;
-import com.app.springrolejwt.repository.implementation.RefreshTokenServiceImpl;
-import com.app.springrolejwt.repository.implementation.SmsServiceImpl;
-import com.app.springrolejwt.repository.implementation.UserDetailsServiceImpl;
 import com.app.springrolejwt.repository.interfaces.RefreshTokenRepository;
 import com.app.springrolejwt.repository.interfaces.RoleRepository;
 import com.app.springrolejwt.repository.interfaces.UserRepository;
 import com.app.springrolejwt.security.JwtUtils;
-import com.app.springrolejwt.repository.implementation.UserDetailsImpl;
 import com.twilio.rest.api.v2010.account.Message;
 import lombok.extern.log4j.Log4j2;
-import org.apache.commons.codec.binary.Base64;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.*;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.security.oauth2.provider.OAuth2Authentication;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
-import javax.validation.ConstraintViolation;
-import javax.validation.ConstraintViolationException;
 import javax.validation.Valid;
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -52,6 +47,9 @@ public class AuthController {
 
 	@Autowired
 	RefreshTokenRepository refreshTokenRepository;
+
+	@Autowired
+	HealthServiceImpl healthService;
 
 	@Autowired
 	RoleRepository roleRepository;
@@ -83,6 +81,12 @@ public class AuthController {
 	public ResponseEntity<?> authSMS(@RequestParam String code, @RequestParam String phone) {
 		//Optional do find user by phone (userValidation)
 
+		if(code == null || phone == null) {
+			return ResponseEntity
+					.badRequest()
+					.body(new MessageVo("Por favor, digite um código válido!"));
+		}
+
 		Optional<User> user = userRepository.findByUsername("+" + phone);
 
 		if (code.equals(userDetailsService.findByCode(code).getCode()) && code.equals(userDetailsService.findByUsername("+" + phone).getCode()) && code != null) {
@@ -112,8 +116,10 @@ public class AuthController {
 
 			return ResponseEntity.ok(new JwtVo(jwt,
 					userDetails.getId(),
+					userDetails.getUuid(),
 					userDetails.getUsername(),
-					roles, refreshToken.getToken()));
+					roles, refreshToken.getToken()
+					));
 
 		}
 
@@ -148,10 +154,10 @@ public class AuthController {
 
 	@PostMapping("/signup")
 	@Transactional
-	public ResponseEntity<?> registerUser(@Validated @RequestBody UserSignupVo signUpRequest) {
+	public ResponseEntity<?> registerUser(@RequestBody UserSignupVo signUpRequest) throws ParseException {
 
 		Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-
+				
 		Optional<User> username = userRepository.findByUsername(auth.getName());
 
 		if (userRepository.existsByUsername((username.get().getUsername()))) {
@@ -167,8 +173,7 @@ public class AuthController {
 				username.get().setSex(signUpRequest.getSex());
 				username.get().setIsWheelchairUser(signUpRequest.getIsWheelchairUser());
 				username.get().setHasAlzheimer(signUpRequest.getHasAlzheimer());
-			}
-			else {
+			} else {
 				username.get().setPassword(encoder.encode(username.get().getCode()));
 				username.get().setPhone(username.get().getUsername());
 				username.get().setBirthDate(signUpRequest.getBirthDate());
@@ -209,8 +214,6 @@ public class AuthController {
 
 			log.info("There was a POST request to sign up from user {}" + username.get().getUsername());
 
-			username.get().setUuid(UUID.randomUUID().toString().substring(0, 5));
-
 			username.get().setRoles(roles);
 
 			userRepository.save(username.get());
@@ -227,7 +230,7 @@ public class AuthController {
 					.map(item -> item.getAuthority())
 					.collect(Collectors.toList());
 
-			log.info("There was a POST request to sign in from user {}" + username.get().getUsername());
+			log.info("There was a POST request to sign in from user " + username.get().getUsername());
 
 			if(refreshTokenRepository.existsByUserId(username.get().getId())) {
 				refreshTokenRepository.deleteByUserId(username.get().getId());
@@ -237,6 +240,7 @@ public class AuthController {
 
 			return ResponseEntity.ok(new JwtVo(jwt,
 					userDetails.getId(),
+					userDetails.getUuid(),
 					userDetails.getUsername(),
 					role, refreshToken.getToken()));
 		}

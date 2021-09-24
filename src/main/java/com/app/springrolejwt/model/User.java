@@ -19,7 +19,10 @@ import java.util.UUID;
 @Entity
 @Table(	name = "users",
 		uniqueConstraints = { 
-			@UniqueConstraint(columnNames = "username")
+			@UniqueConstraint(columnNames = "username"),
+				@UniqueConstraint(columnNames = "phone"),
+				@UniqueConstraint(columnNames = "uuid")
+
 		})
 @Data
 @AllArgsConstructor
@@ -43,7 +46,7 @@ public class User {
 	private Integer height;
 
 	//Is this politically correct?
-	private Boolean sex;
+	private String sex;
 
 	private Boolean isWheelchairUser;
 
@@ -69,7 +72,7 @@ public class User {
 	}
 
 	public User(Long id, String username, String phone, Set<Role> roles,
-				Date birthDate, String completeName, Integer weight, Integer height, Boolean sex,
+				Date birthDate, String completeName, Integer weight, Integer height, String sex,
 				Boolean isWheelchairUser, Boolean hasAlzheimer) {
 		this.id = id;
 		this.username = username;
@@ -85,7 +88,7 @@ public class User {
 	}
 
 	public User(String username, String phone, Set<Role> roles,
-				Date birthDate, String completeName, Integer weight, Integer height, Boolean sex,
+				Date birthDate, String completeName, Integer weight, Integer height, String sex,
 				Boolean isWheelchairUser, Boolean hasAlzheimer) {
 		this.username = username;
 		this.roles = roles;

@@ -1,20 +1,29 @@
 package com.app.springrolejwt.controller;
 
-import com.app.springrolejwt.model.vo.JwtVo;
-import com.app.springrolejwt.model.vo.UserDataVo;
+import com.app.springrolejwt.model.Health;
+import com.app.springrolejwt.model.User;
+import com.app.springrolejwt.model.vo.MessageVo;
+import com.app.springrolejwt.model.vo.userVos.UserDataVo;
+import com.app.springrolejwt.model.vo.userVos.UserHealthVo;
+import com.app.springrolejwt.model.vo.userVos.UserSignupVo;
+import com.app.springrolejwt.repository.implementation.HealthServiceImpl;
 import com.app.springrolejwt.repository.implementation.RefreshTokenServiceImpl;
 import com.app.springrolejwt.repository.implementation.UserDetailsImpl;
 import com.app.springrolejwt.repository.implementation.UserDetailsServiceImpl;
+import com.app.springrolejwt.repository.interfaces.HealthRepository;
+import com.app.springrolejwt.repository.interfaces.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 
@@ -29,11 +38,20 @@ public class AccessController {
 	@Autowired
 	UserDetailsServiceImpl userDetailsService;
 
+	@Autowired
+	HealthServiceImpl healthService;
+
+	@Autowired
+	HealthRepository healthRepository;
+
+	@Autowired
+	UserRepository userRepository;
+
 	@GetMapping("/all")
 	public String allAccess() {
 		return "THIS IS PUBLIIIIIIIIC.";
 	}
-	
+
 	@GetMapping("/user")
 	@PreAuthorize("hasRole('USER') or hasRole('RESPONSIBLE')")
 	public String userAccess() {
@@ -58,6 +76,7 @@ public class AccessController {
 
 		return ResponseEntity.ok(new UserDataVo(
 					userDetails.getUsername(),
+					userDetails.getUuid(),
 					userDetails.getCompleteName(),
 					roles,
 					userDetails.getBirthDate(),
@@ -69,4 +88,15 @@ public class AccessController {
 					userDetails.getPhone()
 				));
 	}
+
+//	@PostMapping("/addContacts")
+//	@Transactional
+//	@PreAuthorize("hasRole('USER') or hasRole('RESPONSIBLE')")
+//	public ResponseEntity<?> addContacts(@RequestParam String uuid, @RequestBody UserHealthVo userHealthVo) {
+//
+//
+//
+//	}
+
+
 }

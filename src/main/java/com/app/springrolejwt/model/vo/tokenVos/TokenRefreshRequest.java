@@ -1,4 +1,4 @@
-package com.app.springrolejwt.model.vo;
+package com.app.springrolejwt.model.vo.tokenVos;
 
 import lombok.Data;
 

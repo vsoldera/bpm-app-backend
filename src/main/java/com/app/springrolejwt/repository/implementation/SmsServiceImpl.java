@@ -8,11 +8,14 @@ import com.twilio.rest.api.v2010.account.Message;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Optional;
+import java.util.UUID;
 
 @Service
 @Log4j2
@@ -28,6 +31,7 @@ public class SmsServiceImpl {
     @Autowired
     PasswordEncoder encoder;
 
+    @Transactional
     public Message sendSms(String phoneNumber) {
         Twilio.init(ACCOUNT_SID, AUTH_TOKEN);
         log.info("User with phone number: " + phoneNumber);
@@ -38,6 +42,7 @@ public class SmsServiceImpl {
 
             user.get().setPassword(encoder.encode(token));
             user.get().setCode(token);
+
             userRepository.save(user.get());
         } else
             if(userRepository.existsByUsername(phoneNumber)) {
@@ -50,6 +55,7 @@ public class SmsServiceImpl {
                 User entity = new User();
                 entity.setUsername(phoneNumber);
                 entity.setPassword(encoder.encode(token));
+                entity.setUuid("@" + UUID.randomUUID().toString().substring(0, 5).toUpperCase());
                 entity.setCode(token);
                 userRepository.save(entity);
             }

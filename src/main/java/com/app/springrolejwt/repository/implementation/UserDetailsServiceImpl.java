@@ -37,19 +37,20 @@ public class UserDetailsServiceImpl implements UserDetailsService {
 
 	public User findByUsername(String username) {
 		User user =  userRepository.findByUsername(username).orElseThrow(() ->
-				new ResponseStatusException(HttpStatus.BAD_REQUEST, "O usuário não existe. Tente novamente!"));
+				new ResponseStatusException(HttpStatus.NOT_FOUND, "O usuário não existe. Tente novamente!"));
 
 		return user;
 	}
 
-	public Long findIdByUsername(String username) {
-		return userRepository.findIdByUsername(username);
+	public User findByUuid(String uuid) {
+		User userUuid =  userRepository.findByUuid(uuid).orElseThrow(() ->
+				new ResponseStatusException(HttpStatus.NOT_FOUND, "O UUID é inexistente. Por favor, contate o suporte!"));
+		return userUuid;
 	}
 
 	public User findByCode(String code) {
 		User userCode =  userRepository.findByCode(code).orElseThrow(() ->
 				new ResponseStatusException(HttpStatus.BAD_REQUEST, "O código é inválido. Tente novamente!"));
-
 		return userCode;
 	}
 
