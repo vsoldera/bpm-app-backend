@@ -7,6 +7,7 @@ import com.app.springrolejwt.model.User;
 import com.app.springrolejwt.model.enums.RoleEnum;
 import com.app.springrolejwt.model.vo.MessageVo;
 import com.app.springrolejwt.model.vo.userVos.DependentVo;
+import com.app.springrolejwt.model.vo.userVos.MonitoredVo;
 import com.app.springrolejwt.model.vo.userVos.UserHealthVo;
 import com.app.springrolejwt.repository.implementation.HealthServiceImpl;
 import com.app.springrolejwt.repository.implementation.UserDetailsServiceImpl;
@@ -50,6 +51,38 @@ public class UserController {
 
     @Autowired
     UserRepository userRepository;
+
+    @GetMapping("/emergencyContacts")
+    @Transactional
+    @PreAuthorize("hasRole('USER')")
+    public Object emergencyContacts() {
+
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+
+        Optional<User> username = userRepository.findByUsername(auth.getName());
+
+        List<Dependency> uuids = dependencyRepository.returnAllContactUuid(username.get().getUuid());
+
+        List<Optional<User>> user = new ArrayList<>();
+
+        uuids.forEach(uuid -> {
+
+                    if (userRepository.existsByUuid(uuid.getUserUuid())) {
+
+                        Optional<User> users = userRepository.findByUuid(uuid.getUserUuid());
+
+                    }
+
+
+                }
+        );
+
+        System.out.println(user);
+
+        return user;
+
+    }
+
 
     @PostMapping("/addContacts")
     @Transactional
@@ -107,7 +140,7 @@ public class UserController {
 
     }
 
-    @PostMapping("/cardiac")
+    @PostMapping("/status")
     @Transactional
     @PreAuthorize("hasRole('USER')")
     public ResponseEntity<?> returnCardiac(@RequestBody UserHealthVo userHealthVo) {
@@ -119,11 +152,13 @@ public class UserController {
 
         if(healthRepository.existsByUuid(uuid)) {
             Optional<Health> health = Optional.ofNullable(healthService.findByUuid(uuid));
+            health.orElse(null).setHearthBeat(userHealthVo.getHearthBeat());
             health.orElse(null).setCardiacSteps(userHealthVo.getCardiacSteps());
-            health.orElse(null).setDate(ZonedDateTime.now());
-            health.orElse(null).setLatitute(userHealthVo.getLatitute());
+            health.orElse(null).setLatitude(userHealthVo.getLatitute());
             health.orElse(null).setLongitude(userHealthVo.getLongitude());
             health.orElse(null).setStatus(userHealthVo.getStatus());
+            health.orElse(null).setUpdated_at(ZonedDateTime.now());
+            health.orElse(null).setHasData(true);
 
             healthRepository.save(health.get());
 
@@ -134,8 +169,9 @@ public class UserController {
 
                 health.setCardiacSteps(userHealthVo.getCardiacSteps());
                 health.setDate(ZonedDateTime.now());
-                health.setLatitute(userHealthVo.getLatitute());
+                health.setLatitude(userHealthVo.getLatitute());
                 health.setLongitude(userHealthVo.getLongitude());
+                health.setUpdated_at(ZonedDateTime.now());
                 health.setStatus(userHealthVo.getStatus());
 
                 healthRepository.save(health);
@@ -148,31 +184,48 @@ public class UserController {
 
     @GetMapping("/monitored")
     @PreAuthorize("hasRole('USER') and hasRole('RESPONSIBLE')")
-    public List<?> returnMonitored() {
+    public Object returnMonitored() {
 
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         Optional<User> username = userRepository.findByUsername(auth.getName());
 
         List<Dependency> uuids = dependencyRepository.returnAllUserUuid(Objects.requireNonNull(username.orElse(null)).getUuid());
         List<Health> health = new ArrayList<>();
+        List<MonitoredVo> usernames = new ArrayList<>();
 
         uuids.forEach(uuid -> {
 
                     if (userRepository.existsByUuid(uuid.getUserUuid()) && healthRepository.existsByUuid(uuid.getUserUuid())) {
-
                         List<Health> healthList = healthRepository.returnAllUserUuid(uuid.getUserUuid());
 
                         health.addAll(healthList);
                     }
 
-
                 }
         );
 
+        health.forEach(health1 -> {
+            Optional<User> user = userRepository.findByUuid(health1.getUuid());
+
+            String userName = user.get().getCompleteName();
+
+            MonitoredVo monitoredVo = new MonitoredVo();
+            monitoredVo.setCompleteName(userName);
+            monitoredVo.setLatitude(health1.getLatitude());
+            monitoredVo.setLongitude(health1.getLongitude());
+            monitoredVo.setStatus(health1.getStatus());
+            monitoredVo.setHearthBeat(health1.getHearthBeat());
+            monitoredVo.setCardiacSteps(health1.getCardiacSteps());
+            monitoredVo.setDate(health1.getDate());
+            monitoredVo.setUuid(health1.getUuid());
+            usernames.add(monitoredVo);
+        });
+
+
+
         System.out.println(health);
 
-        return health;
-
+        return usernames;
     }
 
 }

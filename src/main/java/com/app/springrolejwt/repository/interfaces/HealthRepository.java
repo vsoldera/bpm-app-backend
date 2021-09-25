@@ -2,6 +2,7 @@ package com.app.springrolejwt.repository.interfaces;
 
 import com.app.springrolejwt.model.Dependency;
 import com.app.springrolejwt.model.Health;
+import com.app.springrolejwt.model.vo.userVos.MonitoredVo;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 

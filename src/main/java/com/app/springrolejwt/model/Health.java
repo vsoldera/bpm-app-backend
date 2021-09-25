@@ -1,5 +1,6 @@
 package com.app.springrolejwt.model;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -19,6 +20,7 @@ import java.util.UUID;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
+//@JsonInclude(JsonInclude.Include.NON_NULL)
 public class Health {
 
     @Id
@@ -27,14 +29,22 @@ public class Health {
 
     private String uuid;
 
+    private String username;
+
+    private Integer hearthBeat;
+
     private String status;
 
     private ZonedDateTime date;
 
-    private Float latitute;
+    private Float latitude;
 
     private Float longitude;
 
     private Integer cardiacSteps;
+
+    private Boolean hasData = false;
+
+    private ZonedDateTime updated_at;
 }
 

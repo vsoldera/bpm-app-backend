@@ -6,6 +6,7 @@ import com.app.springrolejwt.model.Role;
 import com.app.springrolejwt.model.vo.tokenVos.TokenRefreshRequest;
 import com.app.springrolejwt.model.vo.tokenVos.TokenRefreshResponse;
 import com.app.springrolejwt.model.vo.userVos.UserSignupVo;
+import com.app.springrolejwt.model.vo.validation.ValidPhoneNumber;
 import com.app.springrolejwt.repository.implementation.*;
 import com.app.springrolejwt.repository.interfaces.HealthRepository;
 import org.springframework.security.core.Authentication;
@@ -93,7 +94,7 @@ public class AuthController {
 
 		Optional<User> user = userRepository.findByUsername("+" + phone);
 
-		if (code.equals(userDetailsService.findByCode(code).getCode()) && code.equals(userDetailsService.findByUsername("+" + phone).getCode()) && code != null) {
+		if (code.equals(userDetailsService.findByCode(code).getCode()) && code.equals(userDetailsService.findByUsername("+" + phone).getCode())) {
 			Authentication authentication = authenticationManager.authenticate(
 					new UsernamePasswordAuthenticationToken(userDetailsService.findByCode(code).getUsername(),
 							userDetailsService.findByCode(code).getCode()));
@@ -193,35 +194,44 @@ public class AuthController {
 				username.get().setPassword(encoder.encode(username.get().getCode()));
 			}
 
-			Set<String> strRoles = signUpRequest.getRole();
-			log.info("Role: " + strRoles);
-			Set<Role> roles = new HashSet<>();
+			log.info("User has roles: " + username.get().getRoles());
 
-			if (strRoles == null) {
-				Role userRole = roleRepository.findByName(RoleEnum.ROLE_USER)
-						.orElseThrow(() -> new RuntimeException("Error: Role was not found."));
-				roles.add(userRole);
-			} else {
-				strRoles.forEach(role -> {
-					switch (role) {
-						case "responsible":
-							Role adminRole = roleRepository.findByName(RoleEnum.ROLE_RESPONSIBLE)
-									.orElseThrow(() -> new RuntimeException("Error: Role was not found: " + roleRepository.findByName(RoleEnum.ROLE_RESPONSIBLE)));
-							roles.add(adminRole);
+			if(auth.getAuthorities().isEmpty()) {
+				Set<String> strRoles = signUpRequest.getRole();
+				log.info("Role: " + strRoles);
+				Set<Role> roles = new HashSet<>();
 
-							break;
+				log.info("User has roles2: " + auth.getCredentials());
+				log.info("User has roles3: " + auth.getAuthorities());
+				log.info("User has roles4: " + auth.getPrincipal());
 
-						default:
-							Role userRole = roleRepository.findByName(RoleEnum.ROLE_USER)
-									.orElseThrow(() -> new RuntimeException("Error: Role was not found: " + roleRepository.findByName(RoleEnum.ROLE_USER)));
-							roles.add(userRole);
-					}
-				});
+				if (strRoles == null) {
+					Role userRole = roleRepository.findByName(RoleEnum.ROLE_USER)
+							.orElseThrow(() -> new RuntimeException("Error: Role was not found."));
+					roles.add(userRole);
+				} else {
+					strRoles.forEach(role -> {
+						switch (role) {
+							case "responsible":
+								Role adminRole = roleRepository.findByName(RoleEnum.ROLE_RESPONSIBLE)
+										.orElseThrow(() -> new RuntimeException("Error: Role was not found: " + roleRepository.findByName(RoleEnum.ROLE_RESPONSIBLE)));
+								roles.add(adminRole);
+
+								break;
+
+							default:
+								Role userRole = roleRepository.findByName(RoleEnum.ROLE_USER)
+										.orElseThrow(() -> new RuntimeException("Error: Role was not found: " + roleRepository.findByName(RoleEnum.ROLE_USER)));
+								roles.add(userRole);
+						}
+					});
+				}
+
+				username.get().setRoles(roles);
 			}
 
-			log.info("There was a POST request to sign up from user {}" + username.get().getUsername());
 
-			username.get().setRoles(roles);
+			log.info("There was a POST request to sign up from user {}" + username.get().getUsername());
 
 			userRepository.save(username.get());
 

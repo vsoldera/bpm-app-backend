@@ -64,6 +64,7 @@ public class SmsServiceImpl {
                 entity.setUuid("@" + UUID.randomUUID().toString().substring(0, 5).toUpperCase());
                 Health health = new Health();
                 health.setUuid(entity.getUuid());
+                health.setUsername(entity.getUsername());
                 entity.setCode(token);
                 healthRepository.save(health);
                 userRepository.save(entity);
