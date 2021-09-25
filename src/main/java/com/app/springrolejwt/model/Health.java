@@ -31,7 +31,7 @@ public class Health {
 
     private String username;
 
-    private Integer hearthBeat;
+    private Integer heartBeat;
 
     private String status;
 

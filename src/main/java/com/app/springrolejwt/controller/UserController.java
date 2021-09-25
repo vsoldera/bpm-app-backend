@@ -162,11 +162,12 @@ public class UserController {
 
         if(healthRepository.existsByUuid(uuid)) {
             Optional<Health> health = Optional.ofNullable(healthService.findByUuid(uuid));
-            health.orElse(null).setHearthBeat(userHealthVo.getHearthBeat());
+            health.orElse(null).setHeartBeat(userHealthVo.getHeartBeat());
             health.orElse(null).setCardiacSteps(userHealthVo.getCardiacSteps());
-            health.orElse(null).setLatitude(userHealthVo.getLatitute());
+            health.orElse(null).setLatitude(userHealthVo.getLatitude());
             health.orElse(null).setLongitude(userHealthVo.getLongitude());
             health.orElse(null).setStatus(userHealthVo.getStatus());
+            health.orElse(null).setDate(ZonedDateTime.now());
             health.orElse(null).setUpdated_at(ZonedDateTime.now());
             health.orElse(null).setHasData(true);
 
@@ -179,7 +180,7 @@ public class UserController {
 
                 health.setCardiacSteps(userHealthVo.getCardiacSteps());
                 health.setDate(ZonedDateTime.now());
-                health.setLatitude(userHealthVo.getLatitute());
+                health.setLatitude(userHealthVo.getLatitude());
                 health.setLongitude(userHealthVo.getLongitude());
                 health.setUpdated_at(ZonedDateTime.now());
                 health.setStatus(userHealthVo.getStatus());
@@ -216,19 +217,19 @@ public class UserController {
             Optional<User> user = userRepository.findByUuid(health1.getUuid());
 
             String userName = user.get().getCompleteName();
-
+            String phone = user.get().getPhone();
             MonitoredVo monitoredVo = new MonitoredVo();
             monitoredVo.setCompleteName(userName);
+            monitoredVo.setPhone(phone);
             monitoredVo.setLatitude(health1.getLatitude());
             monitoredVo.setLongitude(health1.getLongitude());
             monitoredVo.setStatus(health1.getStatus());
-            monitoredVo.setHearthBeat(health1.getHearthBeat());
+            monitoredVo.setHeartBeat(health1.getHeartBeat());
             monitoredVo.setCardiacSteps(health1.getCardiacSteps());
-            monitoredVo.setDate(health1.getDate());
+            monitoredVo.setDate(ZonedDateTime.now());
             monitoredVo.setUuid(health1.getUuid());
             usernames.add(monitoredVo);
         });
-
 
 
         System.out.println(health);

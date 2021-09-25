@@ -16,6 +16,8 @@ public class MonitoredVo {
     @NotBlank
     private String completeName;
 
+    private String phone;
+
     private String uuid;
 
     private ZonedDateTime date;
@@ -25,7 +27,7 @@ public class MonitoredVo {
     private String status;
 
     @NotNull
-    private Integer hearthBeat;
+    private Integer heartBeat;
 
     @NotNull
     private Float latitude;

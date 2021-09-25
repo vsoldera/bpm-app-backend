@@ -14,10 +14,10 @@ public class UserHealthVo {
     private String status;
 
     @NotNull
-    private Integer hearthBeat;
+    private Integer heartBeat;
 
     @NotNull
-    private Float latitute;
+    private Float latitude;
 
     @NotNull
     private Float longitude;
