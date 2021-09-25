@@ -8,6 +8,7 @@ import com.app.springrolejwt.model.enums.RoleEnum;
 import com.app.springrolejwt.model.vo.MessageVo;
 import com.app.springrolejwt.model.vo.userVos.DependentVo;
 import com.app.springrolejwt.model.vo.userVos.MonitoredVo;
+import com.app.springrolejwt.model.vo.userVos.ResponsibleVo;
 import com.app.springrolejwt.model.vo.userVos.UserHealthVo;
 import com.app.springrolejwt.repository.implementation.HealthServiceImpl;
 import com.app.springrolejwt.repository.implementation.UserDetailsServiceImpl;
@@ -61,28 +62,37 @@ public class UserController {
 
         Optional<User> username = userRepository.findByUsername(auth.getName());
 
-        List<Dependency> uuids = dependencyRepository.returnAllContactUuid(username.get().getUuid());
-
-        List<Optional<User>> user = new ArrayList<>();
+        List<Dependency> uuids = dependencyRepository.returnAllContactUuid(Objects.requireNonNull(username.orElse(null)).getUuid());
+        List<User> users = new ArrayList<>();
+        List<ResponsibleVo> usernames = new ArrayList<>();
 
         uuids.forEach(uuid -> {
 
-                    if (userRepository.existsByUuid(uuid.getUserUuid())) {
+            if (userRepository.existsByUuid(uuid.getUserUuid())) {
+                User user = userRepository.returnAllContactUuid(uuid.getContactUuid());
 
-                        Optional<User> users = userRepository.findByUuid(uuid.getUserUuid());
+                User usernameTwo = new User();
+                usernameTwo.setCompleteName(user.getCompleteName());
+                usernameTwo.setPhone(user.getPhone());
+                usernameTwo.setUuid(user.getUuid());
 
-                    }
+                users.add(usernameTwo);
+            }
 
+        });
 
-                }
-        );
+        users.forEach(userData -> {
+            Optional<User> user = userRepository.findByUuid(userData.getUuid());
 
-        System.out.println(user);
+            ResponsibleVo responsibleVo = new ResponsibleVo();
+            responsibleVo.setCompleteName(userData.getCompleteName());
+            responsibleVo.setPhone(userData.getPhone());
+            responsibleVo.setUuid(userData.getUuid());
+            usernames.add(responsibleVo);
+        });
 
-        return user;
-
+        return usernames;
     }
-
 
     @PostMapping("/addContacts")
     @Transactional
@@ -195,14 +205,12 @@ public class UserController {
 
         uuids.forEach(uuid -> {
 
-                    if (userRepository.existsByUuid(uuid.getUserUuid()) && healthRepository.existsByUuid(uuid.getUserUuid())) {
-                        List<Health> healthList = healthRepository.returnAllUserUuid(uuid.getUserUuid());
+            if (userRepository.existsByUuid(uuid.getUserUuid()) && healthRepository.existsByUuid(uuid.getUserUuid())) {
+                List<Health> healthList = healthRepository.returnAllUserUuid(uuid.getUserUuid());
 
-                        health.addAll(healthList);
-                    }
-
-                }
-        );
+                health.addAll(healthList);
+            }
+        });
 
         health.forEach(health1 -> {
             Optional<User> user = userRepository.findByUuid(health1.getUuid());

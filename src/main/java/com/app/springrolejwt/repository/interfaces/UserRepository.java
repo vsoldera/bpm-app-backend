@@ -19,9 +19,13 @@ public interface UserRepository extends JpaRepository<User, Long> {
 
 	Optional<User> findByUuid(String uuid);
 
-	@Query(value = "SELECT * FROM user u WHERE u.uuid = ?1",
+	@Query(value = "SELECT * FROM users u WHERE u.uuid = ?1",
 			nativeQuery = true)
-	List<User> returnAllUserUuid(String uuid);
+	User returnAllUserUuid(String uuid);
+
+	@Query(value = "SELECT * FROM users u WHERE u.uuid = ?1",
+			nativeQuery = true)
+	User returnAllContactUuid(String uuid);
 
 	Long findIdByUsername(String username);
 

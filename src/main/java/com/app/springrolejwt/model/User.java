@@ -68,6 +68,7 @@ public class User {
 	private RefreshToken refreshToken;
 	private Boolean isRefreshActive;
 
+	private Boolean photoPath;
 
 	public User() {
 	}
