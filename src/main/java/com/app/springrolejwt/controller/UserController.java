@@ -18,12 +18,15 @@ import com.app.springrolejwt.repository.interfaces.RoleRepository;
 import com.app.springrolejwt.repository.interfaces.UserRepository;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.time.ZonedDateTime;
 import java.util.*;
@@ -103,7 +106,7 @@ public class UserController {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
 
         AtomicReference<Boolean> added = new AtomicReference<>(false);
-
+        final Boolean[] hasCAS = {false};
         Set<String> strUuid = dependentVo.getResponsible();
 
         Set<String> strGo = new HashSet<>();
@@ -122,20 +125,25 @@ public class UserController {
 
         strUuid.forEach(uuid -> {
             if(userRepository.existsByUuid(uuid) && !uuid.equals(Objects.requireNonNull(username.orElse(null)).getUuid())) {
-                Dependency dependency = new Dependency();
-                dependency.setUserUuid(username.get().getUuid());
-                dependency.setContactUuid(uuid);
-                strGo.add(uuid);
-                dependencyRepository.save(dependency);
 
-                User user = userDetailsService.findByUuid(uuid);
+                if(!dependencyRepository.existsByUserUuidAndContactUuid(username.get().getUuid(), uuid)) {
+                    Dependency dependency = new Dependency();
+                    dependency.setUserUuid(username.get().getUuid());
+                    dependency.setContactUuid(uuid);
+                    strGo.add(uuid);
+                    dependencyRepository.save(dependency);
 
-                user.setRoles(roles);
-                added.set(Boolean.TRUE);
+                    User user = userDetailsService.findByUuid(uuid);
 
-            } else {
-                strNotGo.add(uuid);
+                    user.setRoles(roles);
+                    added.set(Boolean.TRUE);
+
+                } else {
+                    strNotGo.add(uuid);
+                }
             }
+
+            hasCAS[0] = true;
         });
 
         if(added.get().equals(Boolean.TRUE)) {
@@ -144,10 +152,12 @@ public class UserController {
                     .body(strGo);
         }
 
-        return ResponseEntity
-                    .accepted()
-                    .body("Por favor, digite UUIDs existentes: " + strNotGo);
+        if(hasCAS[0].equals(Boolean.TRUE)) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "O usuário já é seu responsável");
+        }
 
+        throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                "Os seguintes UUIDs digitados não são válidos/não existem: " + strNotGo);
     }
 
     @PostMapping("/status")
@@ -168,7 +178,6 @@ public class UserController {
             health.orElse(null).setLongitude(userHealthVo.getLongitude());
             health.orElse(null).setStatus(userHealthVo.getStatus());
             health.orElse(null).setDate(ZonedDateTime.now());
-            health.orElse(null).setUpdated_at(ZonedDateTime.now());
             health.orElse(null).setHasData(true);
 
             healthRepository.save(health.get());
@@ -179,7 +188,6 @@ public class UserController {
                 Health health = new Health();
 
                 health.setCardiacSteps(userHealthVo.getCardiacSteps());
-                health.setDate(ZonedDateTime.now());
                 health.setLatitude(userHealthVo.getLatitude());
                 health.setLongitude(userHealthVo.getLongitude());
                 health.setUpdated_at(ZonedDateTime.now());
@@ -190,7 +198,8 @@ public class UserController {
                 return ResponseEntity.ok().body(new MessageVo("Dados adicionados com sucesso!"));
             }
 
-        return ResponseEntity.badRequest().body(new MessageVo("Houve um erro! Por favor, contate o suporte"));
+        throw new ResponseStatusException(HttpStatus.NOT_FOUND,
+                "Houve um erro! Por favor, contate o suporte");
     }
 
     @GetMapping("/monitored")

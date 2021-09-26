@@ -17,4 +17,8 @@ public interface DependencyRepository extends JpaRepository<Dependency, Integer>
     @Query(value = "SELECT * FROM dependency d WHERE d.user_uuid = ?1",
             nativeQuery = true)
     List<Dependency> returnAllContactUuid(String userUuid);
+
+    Boolean existsByUserUuidAndContactUuid(String userUuid, String contactUuid);
+
+    Dependency findByUserUuid(String userUuid);
 }
