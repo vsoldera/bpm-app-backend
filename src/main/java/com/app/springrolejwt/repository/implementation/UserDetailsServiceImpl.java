@@ -26,7 +26,9 @@ public class UserDetailsServiceImpl implements UserDetailsService {
 	public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
 		Optional<User> user = userRepository.findByUsername(username);
 
-		return UserDetailsImpl.build(user.get());
+
+		//Mudei aqui
+		return UserDetailsImpl.build(user.stream().findFirst().orElse(null));
 	}
 
 	public Optional<User> findByPhone(String phoneNumber) {
