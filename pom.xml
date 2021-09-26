@@ -8,14 +8,14 @@
 		<version>2.3.1.RELEASE</version>
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
-	<groupId>com.akhianand</groupId>
+	<groupId>com.app</groupId>
 	<artifactId>spring-role-jwt</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
 	<name>spring-role-jwt</name>
 	<description>A Spring Boot Project User Management Project with JWT and Role based API Access</description>
 
 	<properties>
-		<java.version>9</java.version>
+		<java.version>1.8</java.version>
 	</properties>
 	<dependencies>
 		<dependency>
