@@ -139,11 +139,14 @@ public class UserController {
                     added.set(Boolean.TRUE);
 
                 } else {
-                    strNotGo.add(uuid);
+                    hasCAS[0] = true;
+
                 }
+            } else {
+                strNotGo.add(uuid);
             }
 
-            hasCAS[0] = true;
+
         });
 
         if(added.get().equals(Boolean.TRUE)) {
