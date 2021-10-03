@@ -5,6 +5,7 @@ import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.Collections;
 import java.util.HashMap;
@@ -45,7 +46,8 @@ public class RestService {
         if (response.getStatusCode() == HttpStatus.OK) {
             return;
         } else {
-            return;
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR,
+                    "Houve um erro. Tente novamente mais tarde!");
         }
     }
 
