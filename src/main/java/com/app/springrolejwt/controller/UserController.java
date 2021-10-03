@@ -6,11 +6,9 @@ import com.app.springrolejwt.model.Role;
 import com.app.springrolejwt.model.User;
 import com.app.springrolejwt.model.enums.RoleEnum;
 import com.app.springrolejwt.model.vo.MessageVo;
-import com.app.springrolejwt.model.vo.userVos.DependentVo;
-import com.app.springrolejwt.model.vo.userVos.MonitoredVo;
-import com.app.springrolejwt.model.vo.userVos.ResponsibleVo;
-import com.app.springrolejwt.model.vo.userVos.UserHealthVo;
+import com.app.springrolejwt.model.vo.userVos.*;
 import com.app.springrolejwt.repository.implementation.HealthServiceImpl;
+import com.app.springrolejwt.repository.implementation.RestService;
 import com.app.springrolejwt.repository.implementation.UserDetailsServiceImpl;
 import com.app.springrolejwt.repository.interfaces.DependencyRepository;
 import com.app.springrolejwt.repository.interfaces.HealthRepository;
@@ -18,9 +16,7 @@ import com.app.springrolejwt.repository.interfaces.RoleRepository;
 import com.app.springrolejwt.repository.interfaces.UserRepository;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.*;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -28,6 +24,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.io.IOException;
 import java.time.ZonedDateTime;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicReference;
@@ -55,6 +52,10 @@ public class UserController {
 
     @Autowired
     UserRepository userRepository;
+
+    @Autowired
+    RestService restService;
+
 
     @GetMapping("/emergencyContacts")
     @Transactional
@@ -97,11 +98,56 @@ public class UserController {
         return usernames;
     }
 
+    @PostMapping("/emergencyContactsWithUuid")
+    @Transactional
+    @PreAuthorize("hasRole('USER')")
+    public Object emergencyContactsWithUuid(@RequestBody DependentSingleVo
+                                                        dependentVo) {
+
+        log.info("There was a POST request to get responsibles from dependent with UUID: " + dependentVo.getUuid());
+
+        if(!userRepository.existsByUuid(dependentVo.getUuid())) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND,
+                    "O UUID digitado não existe: " + dependentVo.getUuid());
+        }
+
+        List<Dependency> uuids = dependencyRepository.returnAllContactUuid(dependentVo.getUuid());
+        List<User> users = new ArrayList<>();
+        List<ResponsibleVo> usernames = new ArrayList<>();
+
+        uuids.forEach(uuidGet -> {
+
+            if (userRepository.existsByUuid(uuidGet.getUserUuid())) {
+                User user = userRepository.returnAllContactUuid(uuidGet.getContactUuid());
+
+                User usernameTwo = new User();
+                usernameTwo.setCompleteName(user.getCompleteName());
+                usernameTwo.setPhone(user.getPhone());
+                usernameTwo.setUuid(user.getUuid());
+
+                users.add(usernameTwo);
+            }
+
+        });
+
+        users.forEach(userData -> {
+            Optional<User> user = userRepository.findByUuid(userData.getUuid());
+
+            ResponsibleVo responsibleVo = new ResponsibleVo();
+            responsibleVo.setCompleteName(userData.getCompleteName());
+            responsibleVo.setPhone(userData.getPhone());
+            responsibleVo.setUuid(userData.getUuid());
+            usernames.add(responsibleVo);
+        });
+
+        return usernames;
+    }
+
     @PostMapping("/addContacts")
     @Transactional
     @PreAuthorize("hasRole('USER')")
     public ResponseEntity<?> addContacts(@RequestBody DependentVo
-            dependentVo) {
+            dependentVo) throws IOException {
 
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
 
@@ -112,7 +158,10 @@ public class UserController {
         Set<String> strGo = new HashSet<>();
         Set<String> strNotGo = new HashSet<>();
 
+        String monitoredName;
+
         Optional<User> username = userRepository.findByUsername(auth.getName());
+        monitoredName = username.get().getCompleteName();
         Set<Role> roles = new HashSet<>();
 
         Role userRole = roleRepository.findByName(RoleEnum.ROLE_USER)
@@ -150,6 +199,14 @@ public class UserController {
         });
 
         if(added.get().equals(Boolean.TRUE)) {
+            final String[] uuidToNotification = {null};
+
+            strGo.forEach(i -> {
+                uuidToNotification[0] = i;
+            });
+
+            restService.CreatePostVo(uuidToNotification[0], monitoredName);
+            System.out.println("Aoba: " + uuidToNotification[0]);
             return ResponseEntity
                     .accepted()
                     .body(strGo);

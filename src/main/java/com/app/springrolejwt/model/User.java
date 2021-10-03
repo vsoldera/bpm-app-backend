@@ -10,6 +10,7 @@ import javax.validation.constraints.Email;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
+import java.time.ZonedDateTime;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
@@ -39,7 +40,7 @@ public class User {
 
 	private String password;
 
-	private Date birthDate;
+	private String birthDate;
 
 	private Integer weight;
 
@@ -74,7 +75,7 @@ public class User {
 	}
 
 	public User(Long id, String username, String phone, Set<Role> roles,
-				Date birthDate, String completeName, Integer weight, Integer height, String sex,
+				String birthDate, String completeName, Integer weight, Integer height, String sex,
 				Boolean isWheelchairUser, Boolean hasAlzheimer) {
 		this.id = id;
 		this.username = username;
@@ -90,7 +91,7 @@ public class User {
 	}
 
 	public User(String username, String phone, Set<Role> roles,
-				Date birthDate, String completeName, Integer weight, Integer height, String sex,
+				String birthDate, String completeName, Integer weight, Integer height, String sex,
 				Boolean isWheelchairUser, Boolean hasAlzheimer) {
 		this.username = username;
 		this.roles = roles;

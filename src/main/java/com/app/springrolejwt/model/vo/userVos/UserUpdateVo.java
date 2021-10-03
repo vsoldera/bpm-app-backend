@@ -18,7 +18,7 @@ public class UserUpdateVo {
 
     @NotBlank
     @NotNull
-    private Date birthDate;
+    private String birthDate;
 
     @NotBlank
     @NotNull

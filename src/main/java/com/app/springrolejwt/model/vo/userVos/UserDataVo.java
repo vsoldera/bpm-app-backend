@@ -14,7 +14,7 @@ public class UserDataVo {
     private String uuid;
     private String completeName;
     private List<String> roles;
-    private Date birthDate;
+    private String birthDate;
     private Integer weight;
     private Integer height;
     private String sex;
@@ -22,7 +22,7 @@ public class UserDataVo {
     private Boolean hasAlzheimer;
     private String phone;
 
-    public UserDataVo(String username, String uuid, String completeName, List<String> roles, Date birthDate, Integer weight, Integer height, String sex, Boolean isWheelchairUser, Boolean hasAlzheimer, String phone) {
+    public UserDataVo(String username, String uuid, String completeName, List<String> roles, String birthDate, Integer weight, Integer height, String sex, Boolean isWheelchairUser, Boolean hasAlzheimer, String phone) {
         this.username = username;
         this.uuid = uuid;
         this.completeName = completeName;

@@ -10,6 +10,7 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import javax.validation.constraints.NotNull;
+import java.time.ZonedDateTime;
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
@@ -39,7 +40,7 @@ public class UserDetailsImpl implements UserDetails {
 
 	private String uuid;
 
-	private Date birthDate;
+	private String birthDate;
 	private Integer weight;
 	private Integer height;
 	private String sex;
@@ -47,7 +48,7 @@ public class UserDetailsImpl implements UserDetails {
 	private Boolean hasAlzheimer;
 	private Boolean isRegistered;
 
-	public UserDetailsImpl(Long id, String username, String completeName, String phone, String password, Collection<? extends GrantedAuthority> authorities, Date birthDate, Integer weight, Integer height, String sex, Boolean isWheelchairUser, Boolean hasAlzheimer, String uuid) {
+	public UserDetailsImpl(Long id, String username, String completeName, String phone, String password, Collection<? extends GrantedAuthority> authorities, String birthDate, Integer weight, Integer height, String sex, Boolean isWheelchairUser, Boolean hasAlzheimer, String uuid) {
 		this.id = id;
 		this.username = username;
 		this.completeName = completeName;

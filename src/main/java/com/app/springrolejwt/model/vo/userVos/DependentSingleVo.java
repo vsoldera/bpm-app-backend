@@ -4,13 +4,11 @@ import lombok.Data;
 
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
-import java.util.Set;
 
 @Data
-public class DependentVo {
+public class DependentSingleVo {
 
     @NotNull
     @NotBlank
-    private Set<String> responsible;
-
+    String uuid;
 }

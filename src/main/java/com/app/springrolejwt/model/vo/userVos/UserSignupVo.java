@@ -8,6 +8,7 @@ import org.springframework.validation.annotation.Validated;
 
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
+import java.time.ZonedDateTime;
 import java.util.Date;
 import java.util.Set;
 
@@ -22,7 +23,8 @@ public class UserSignupVo {
     private Set<String> role;
 
     @NotNull(message = "Por favor, preencha o campo data")
-    private Date birthDate;
+    @javax.validation.constraints.NotBlank
+    private String birthDate;
 
     @NotNull(message = "Por favor, preencha o campo peso")
     private Integer weight;

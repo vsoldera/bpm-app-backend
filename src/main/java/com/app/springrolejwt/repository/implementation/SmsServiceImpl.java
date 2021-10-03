@@ -74,7 +74,7 @@ public class SmsServiceImpl {
         return Message.creator(
                 new com.twilio.type.PhoneNumber(phoneNumber),
                 new com.twilio.type.PhoneNumber("+13152104249"),
-                "Bem-vindo ao app BPM. Seu código é: " + token).create();
+                "Bem-vindo ao app BP. Seu código é: " + token).create();
     }
 
     public String generateToken() {

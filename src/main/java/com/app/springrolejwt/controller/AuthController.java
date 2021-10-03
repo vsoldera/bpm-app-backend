@@ -27,6 +27,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
+import org.apache.commons.lang3.time.DateUtils;
 
 import javax.validation.Valid;
 import java.text.DateFormat;
@@ -173,6 +174,7 @@ public class AuthController {
 			if(username.get().getIsRegistered()) {
 				username.get().setPhone(username.get().getUsername());
 				username.get().setBirthDate(signUpRequest.getBirthDate());
+				//System.out.println("DIA DE ANIVERSARIO1: " + DateUtils.truncate(signUpRequest.getBirthDate(), Calendar.DATE));
 				username.get().setCompleteName(signUpRequest.getCompleteName());
 				username.get().setWeight(signUpRequest.getWeight());
 				username.get().setHeight(signUpRequest.getHeight());
@@ -184,6 +186,7 @@ public class AuthController {
 				//username.get().setPassword(encoder.encode(username.get().getCode()));
 				username.get().setPhone(username.get().getUsername());
 				username.get().setBirthDate(signUpRequest.getBirthDate());
+				//System.out.println("DIA DE ANIVERSARIO2: " + DateUtils.truncate(signUpRequest.getBirthDate(), Calendar.DATE));
 				username.get().setCompleteName(signUpRequest.getCompleteName());
 				username.get().setWeight(signUpRequest.getWeight());
 				username.get().setHeight(signUpRequest.getHeight());
@@ -201,9 +204,9 @@ public class AuthController {
 				log.info("Role: " + strRoles);
 				Set<Role> roles = new HashSet<>();
 
-				log.info("User has roles2: " + auth.getCredentials());
-				log.info("User has roles3: " + auth.getAuthorities());
-				log.info("User has roles4: " + auth.getPrincipal());
+				log.info("User has credentials: " + auth.getCredentials());
+				log.info("User has authorities: " + auth.getAuthorities());
+				log.info("User has principals: " + auth.getPrincipal());
 
 				if (strRoles == null) {
 					Role userRole = roleRepository.findByName(RoleEnum.ROLE_USER)
