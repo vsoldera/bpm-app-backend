@@ -12,6 +12,8 @@ public class ResponsibleVo {
     @NotBlank
     private String completeName;
 
+    private String dependentName;
+
     private String uuid;
 
     private String phone;

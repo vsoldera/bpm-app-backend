@@ -4,6 +4,8 @@ package com.app.springrolejwt.repository.interfaces;
 import com.app.springrolejwt.model.Health;
 import com.app.springrolejwt.model.RefreshToken;
 import com.app.springrolejwt.model.User;
+import com.app.springrolejwt.model.vo.userVos.DependentResponsibleVo;
+import com.app.springrolejwt.model.vo.userVos.ResponsibleVo;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
@@ -18,6 +20,10 @@ public interface UserRepository extends JpaRepository<User, Long> {
 	Optional<User> findByPhone(String phone);
 
 	Optional<User> findByUuid(String uuid);
+
+	@Query(value = "SELECT * FROM users u WHERE u.uuid = ?1",
+			nativeQuery = true)
+	User findUserByUuid(String uuid);
 
 	@Query(value = "SELECT * FROM users u WHERE u.uuid = ?1",
 			nativeQuery = true)
@@ -40,6 +46,10 @@ public interface UserRepository extends JpaRepository<User, Long> {
 	Boolean existsByIsRegistered(Boolean option);
 
 	Boolean existsByUuid(String uuid);
+
+	@Query(value = "SELECT * FROM users u WHERE u.uuid = ?1",
+			nativeQuery = true)
+	List<User> returnAllUser(String uuid);
 
 //	@Query("UPDATE user SET username = username WHERE id = id")
 //	Optional<User> findQuestionDetails(@Param("username") String username);

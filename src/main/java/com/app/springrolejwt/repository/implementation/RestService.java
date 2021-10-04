@@ -1,6 +1,7 @@
 package com.app.springrolejwt.repository.implementation;
 
 import com.app.springrolejwt.model.Post;
+import lombok.extern.log4j.Log4j2;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
@@ -13,6 +14,7 @@ import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
 
 @Service
+@Log4j2
 public class RestService {
 
     private final RestTemplate restTemplate;
@@ -40,6 +42,7 @@ public class RestService {
         HttpEntity<Map<String, Object>> entity = new HttpEntity<>(map, headers);
 
         // send POST request
+        log.info("Senging request to notification server, waiting for response");
         ResponseEntity<Post> response = this.restTemplate.postForEntity(url, entity, Post.class);
 
         // check response status code

@@ -112,35 +112,36 @@ public class UserController {
         }
 
         List<Dependency> uuids = dependencyRepository.returnAllContactUuid(dependentVo.getUuid());
-        List<User> users = new ArrayList<>();
-        List<ResponsibleVo> usernames = new ArrayList<>();
 
-        uuids.forEach(uuidGet -> {
+        DependentResponsibleVo dependentResponsibleVo = new DependentResponsibleVo();
+        dependentResponsibleVo.setDependent(userRepository.findByUuid(dependentVo.getUuid()).orElse(null).getCompleteName());
+        dependentResponsibleVo.setUuid(dependentVo.getUuid());
+        dependentResponsibleVo.setPhone(userRepository.findByUuid(dependentVo.getUuid()).orElse(null).getPhone());
 
-            if (userRepository.existsByUuid(uuidGet.getUserUuid())) {
-                User user = userRepository.returnAllContactUuid(uuidGet.getContactUuid());
+        List<User> list = new ArrayList<>();
+        List<ResponsibleVo> list2 = new ArrayList<>();
 
-                User usernameTwo = new User();
-                usernameTwo.setCompleteName(user.getCompleteName());
-                usernameTwo.setPhone(user.getPhone());
-                usernameTwo.setUuid(user.getUuid());
+        uuids.forEach(uuid -> {
 
-                users.add(usernameTwo);
+            if (userRepository.existsByUuid(uuid.getContactUuid())) {
+                List<User> whatever = userRepository.returnAllUser(uuid.getContactUuid());
+
+                list.addAll(whatever);
             }
-
         });
 
-        users.forEach(userData -> {
-            Optional<User> user = userRepository.findByUuid(userData.getUuid());
-
+        list.forEach(contact -> {
+            User user = userRepository.findUserByUuid(contact.getUuid());
             ResponsibleVo responsibleVo = new ResponsibleVo();
-            responsibleVo.setCompleteName(userData.getCompleteName());
-            responsibleVo.setPhone(userData.getPhone());
-            responsibleVo.setUuid(userData.getUuid());
-            usernames.add(responsibleVo);
+            responsibleVo.setCompleteName(user.getCompleteName());
+            responsibleVo.setUuid(user.getUuid());
+            responsibleVo.setPhone(user.getPhone());
+            list2.add(responsibleVo);
         });
 
-        return usernames;
+        dependentResponsibleVo.setResponsibles(list2);
+
+        return dependentResponsibleVo;
     }
 
     @PostMapping("/addContacts")
@@ -206,6 +207,7 @@ public class UserController {
             });
 
             restService.CreatePostVo(uuidToNotification[0], monitoredName);
+
             System.out.println("Aoba: " + uuidToNotification[0]);
             return ResponseEntity
                     .accepted()
