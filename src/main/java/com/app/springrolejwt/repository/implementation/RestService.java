@@ -24,7 +24,7 @@ public class RestService {
     }
 
     public void CreatePostVo(String uuid, String monitoredName) {
-        String url = "http://186.236.122.161:1880/sendNotificationAddResponsible";
+        String url = "http://186.236.107.116:1880/sendNotificationAddResponsible";
 
         // create headers
         HttpHeaders headers = new HttpHeaders();
@@ -42,7 +42,7 @@ public class RestService {
         HttpEntity<Map<String, Object>> entity = new HttpEntity<>(map, headers);
 
         // send POST request
-        log.info("Senging request to notification server, waiting for response");
+        log.info("Sending request to notification server, waiting for response");
         ResponseEntity<Post> response = this.restTemplate.postForEntity(url, entity, Post.class);
 
         // check response status code

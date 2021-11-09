@@ -1,21 +1,17 @@
 package com.app.springrolejwt.controller;
 
-import com.app.springrolejwt.model.Health;
-import com.app.springrolejwt.model.RefreshToken;
-import com.app.springrolejwt.model.Role;
+import com.app.springrolejwt.model.*;
 import com.app.springrolejwt.model.vo.tokenVos.TokenRefreshRequest;
 import com.app.springrolejwt.model.vo.tokenVos.TokenRefreshResponse;
 import com.app.springrolejwt.model.vo.userVos.UserSignupVo;
 import com.app.springrolejwt.model.vo.validation.ValidPhoneNumber;
 import com.app.springrolejwt.repository.implementation.*;
-import com.app.springrolejwt.repository.interfaces.HealthRepository;
+import com.app.springrolejwt.repository.interfaces.*;
+import com.twilio.rest.api.v2010.account.Call;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.security.core.Authentication;
-import com.app.springrolejwt.model.User;
 import com.app.springrolejwt.model.enums.RoleEnum;
 import com.app.springrolejwt.model.vo.*;
-import com.app.springrolejwt.repository.interfaces.RefreshTokenRepository;
-import com.app.springrolejwt.repository.interfaces.RoleRepository;
-import com.app.springrolejwt.repository.interfaces.UserRepository;
 import com.app.springrolejwt.security.JwtUtils;
 import com.twilio.rest.api.v2010.account.Message;
 import lombok.extern.log4j.Log4j2;
@@ -70,16 +66,45 @@ public class AuthController {
 	SmsServiceImpl smsService;
 
 	@Autowired
+	VoiceCallService voiceCallService;
+
+	@Autowired
 	RefreshTokenServiceImpl refreshTokenService;
 
 	@Autowired
 	UserDetailsServiceImpl userDetailsService;
+
+	@Autowired
+	DependencyRepository dependencyRepository;
 
 	@PostMapping("/sendSMS")
 	@Transactional
 	public Message sendSMS(@RequestParam String phoneNumber) {
 		log.info("There was a POST request to sign in using phone " + phoneNumber);
 		return smsService.sendSms("+" + phoneNumber);
+	}
+
+	@PostMapping("/sendVoiceCall")
+	@Transactional
+	@Async
+	public void sendVoiceCall() {
+
+		Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+		Optional<User> username = userRepository.findByUsername(auth.getName());
+
+		List<Dependency> uuids = dependencyRepository.returnAllContactUuid(username.orElse(null).getUuid());
+
+		uuids.forEach(contact -> {
+			Optional<User> user = userRepository.findByUuid(contact.getContactUuid());
+			log.info("Sending request to phone number: " + user.orElse(null).getPhone());
+			try {
+				voiceCallService.sendVoiceCall(user.orElse(null).getPhone(), username.get().getCompleteName());
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
+			log.info("There was a request to warn users responsible for: " + username.orElse(null).getCompleteName());
+		});
+
 	}
 
 	@PostMapping("/authCode")

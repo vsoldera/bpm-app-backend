@@ -144,6 +144,67 @@ public class UserController {
         return dependentResponsibleVo;
     }
 
+    @DeleteMapping("/removeEmergencyContact")
+    @Transactional
+    @PreAuthorize("hasRole('USER')")
+    public ResponseEntity<?> removeEmergencyContacts(@RequestBody DependentVo dependentVo) throws IOException{
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+
+        AtomicReference<Boolean> added = new AtomicReference<>(false);
+        final Boolean[] hasCAS = {false};
+        Set<String> strUuid = dependentVo.getResponsible();
+
+        Set<String> strGo = new HashSet<>();
+        Set<String> strNotGo = new HashSet<>();
+
+        String monitoredName;
+
+        Optional<User> username = userRepository.findByUsername(auth.getName());
+        monitoredName = username.get().getCompleteName();
+        Set<Role> roles = new HashSet<>();
+
+        Role userRole = roleRepository.findByName(RoleEnum.ROLE_USER)
+                .orElseThrow(() -> new RuntimeException("Error: Role was not found."));
+        roles.add(userRole);
+
+        Role responsibleRole = roleRepository.findByName(RoleEnum.ROLE_RESPONSIBLE)
+                .orElseThrow(() -> new RuntimeException("Error: Role was not found."));
+        roles.add(responsibleRole);
+
+        AtomicReference<String> contactUuid = new AtomicReference<>();
+        AtomicReference<String> userUuid = new AtomicReference<>();
+
+        strUuid.forEach(uuid -> {
+            if(userRepository.existsByUuid(uuid) && !uuid.equals(Objects.requireNonNull(username.orElse(null)).getUuid())) {
+                if (dependencyRepository.existsByUserUuidAndContactUuid(username.get().getUuid(), uuid)) {
+
+                    hasCAS[0] = true;
+
+                }
+                if (hasCAS[0].equals(Boolean.TRUE)) {
+                    userUuid.set(username.get().getUuid());
+                    contactUuid.set(uuid);
+                }
+            }
+
+            }
+        );
+
+        if(hasCAS[0].equals(Boolean.TRUE)) {
+            System.out.println("Mandando contactUuid: " + contactUuid.get() + " UserUuid: " + userUuid.get());
+            dependencyRepository.deleteContactUuid(contactUuid.get(), userUuid.get());
+            return ResponseEntity
+                    .ok().body("Usuario com Uuid: " + contactUuid + " não é mais seu responsável");
+        }
+
+
+        throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                "O UUID digitado não existe ou não é pertencente a nenhum de seus contatos");
+
+    }
+
+
+
     @PostMapping("/addContacts")
     @Transactional
     @PreAuthorize("hasRole('USER')")
