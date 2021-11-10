@@ -47,7 +47,7 @@ public class DocumentStorageService {
 
     }
 
-    public String storeFile(MultipartFile file, Integer userId, String docType) {
+    public String storeFile(MultipartFile file, Integer userId, String docType, String imageType) {
 
         String originalFileName = StringUtils.cleanPath(file.getOriginalFilename());
         String fileName = "";
@@ -60,9 +60,10 @@ public class DocumentStorageService {
             String fileExtension = "";
 
 
-            fileExtension = ".png";
+            fileExtension = imageType;
 
             fileName = userId + "_" + docType + fileExtension;
+            System.out.println("FILENAME: " + fileName);
 
             // Copy file to the target location (Replacing existing file with the same name)
             Path targetLocation = this.fileStorageLocation.resolve(fileName);
@@ -74,7 +75,7 @@ public class DocumentStorageService {
 
                     doc.setDocumentFormat(file.getContentType());
                     doc.setFileName(fileName);
-                    username.get().setPhotoPath("/downloadFile/"+fileName);
+                    username.get().setPhotoPath("http://localhost:8082/api/user/getImage/"+fileName);
                     docStorageRepo.save(doc);
 
             } else {
@@ -85,7 +86,7 @@ public class DocumentStorageService {
                 newDoc.setDocumentFormat(file.getContentType());
                 newDoc.setFileName(fileName);
                 newDoc.setDocumentType(docType);
-                username.get().setPhotoPath("/downloadFile/"+fileName);
+                username.get().setPhotoPath("http://localhost:8082/api/user/getImage/"+fileName);
                 docStorageRepo.save(newDoc);
 
             }

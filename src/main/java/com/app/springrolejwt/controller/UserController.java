@@ -7,6 +7,7 @@ import com.app.springrolejwt.model.User;
 import com.app.springrolejwt.model.enums.RoleEnum;
 import com.app.springrolejwt.model.vo.MessageVo;
 import com.app.springrolejwt.model.vo.UploadFileResponse;
+import com.app.springrolejwt.model.vo.UserImageVo;
 import com.app.springrolejwt.model.vo.userVos.*;
 import com.app.springrolejwt.repository.implementation.DocumentStorageService;
 import com.app.springrolejwt.repository.implementation.HealthServiceImpl;
@@ -15,6 +16,7 @@ import com.app.springrolejwt.repository.implementation.UserDetailsServiceImpl;
 import com.app.springrolejwt.repository.interfaces.*;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.FileSystemResource;
 import org.springframework.http.*;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
@@ -25,6 +27,7 @@ import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
+import java.io.File;
 import java.io.IOException;
 import java.time.ZonedDateTime;
 import java.util.*;
@@ -209,14 +212,14 @@ public class UserController {
 
     @PostMapping("/uploadImage")
     @PreAuthorize("hasRole('USER')")
-    public UploadFileResponse uploadImage(@RequestParam("file")String file, @RequestParam("docType") String docType) throws IOException {
+    public UploadFileResponse uploadImage(@RequestBody UserImageVo userImageVo) throws IOException {
 
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         Optional<User> username = userRepository.findByUsername(auth.getName());
 
-        byte[] decode = Base64.getDecoder().decode(file);
-        MultipartFile multi = new BASE64DecodedMultipartFile(Base64.getDecoder().decode(file));
-        String fileName = documentStorageService.storeFile(multi, username.get().getId().intValue(), docType);
+        byte[] decode = Base64.getDecoder().decode(userImageVo.getFile());
+        MultipartFile multi = new BASE64DecodedMultipartFile(Base64.getDecoder().decode(userImageVo.getFile()));
+        String fileName = documentStorageService.storeFile(multi, username.get().getId().intValue(), userImageVo.getDocType(), userImageVo.getImageType());
 
         String fileDownloadUri = ServletUriComponentsBuilder.fromCurrentContextPath().path("/downloadFile/").path(fileName).toUriString();
 
@@ -343,6 +346,13 @@ public class UserController {
 
         throw new ResponseStatusException(HttpStatus.NOT_FOUND,
                 "Houve um erro! Por favor, contate o suporte");
+    }
+
+    @RequestMapping("/getImage/{fileName}")
+    @ResponseBody
+    public FileSystemResource getFile(@PathVariable String fileName) throws IOException {
+        log.info("Received a request to get image: " + fileName);
+        return new FileSystemResource(new File("./images/"+fileName));
     }
 
     @GetMapping("/monitored")
