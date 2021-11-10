@@ -217,13 +217,19 @@ public class UserController {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         Optional<User> username = userRepository.findByUsername(auth.getName());
 
-        byte[] decode = Base64.getDecoder().decode(userImageVo.getFile());
-        MultipartFile multi = new BASE64DecodedMultipartFile(Base64.getDecoder().decode(userImageVo.getFile()));
-        String fileName = documentStorageService.storeFile(multi, username.get().getId().intValue(), userImageVo.getDocType(), userImageVo.getImageType());
+        try {
+            log.info("USER type: " + userImageVo.getImageType() + " " + userImageVo.getDocType() + " " + userImageVo.getFile());
 
-        String fileDownloadUri = ServletUriComponentsBuilder.fromCurrentContextPath().path("/downloadFile/").path(fileName).toUriString();
+            //byte[] decode = Base64.getDecoder().decode(userImageVo.getFile());
+            MultipartFile multi = new BASE64DecodedMultipartFile(Base64.getDecoder().decode(userImageVo.getFile()));
+            String fileName = documentStorageService.storeFile(multi, username.get().getId().intValue(), userImageVo.getDocType(), userImageVo.getImageType());
 
-        return new UploadFileResponse(fileName, fileDownloadUri, multi.getContentType(), multi.getSize());
+            String fileDownloadUri = ServletUriComponentsBuilder.fromCurrentContextPath().path("/downloadFile/").path(fileName).toUriString();
+
+            return new UploadFileResponse(fileName, fileDownloadUri, multi.getContentType(), multi.getSize());
+        }catch (Exception e) {
+            throw new UnsupportedOperationException("Erro inesperado.Tente novamente mais tarde.");
+        }
     }
 
 

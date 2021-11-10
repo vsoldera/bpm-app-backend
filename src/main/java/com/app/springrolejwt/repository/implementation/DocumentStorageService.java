@@ -62,8 +62,8 @@ public class DocumentStorageService {
 
             fileExtension = imageType;
 
-            fileName = userId + "_" + docType + fileExtension;
-            System.out.println("FILENAME: " + fileName);
+            fileName = userId + "_" + docType + "." + fileExtension;
+            System.out.println("FILENAME: " + "."+fileName);
 
             // Copy file to the target location (Replacing existing file with the same name)
             Path targetLocation = this.fileStorageLocation.resolve(fileName);
@@ -75,7 +75,7 @@ public class DocumentStorageService {
 
                     doc.setDocumentFormat(file.getContentType());
                     doc.setFileName(fileName);
-                    username.get().setPhotoPath("http://localhost:8082/api/user/getImage/"+fileName);
+                    username.get().setPhotoPath("/api/user/getImage/"+fileName);
                     docStorageRepo.save(doc);
 
             } else {
@@ -86,7 +86,7 @@ public class DocumentStorageService {
                 newDoc.setDocumentFormat(file.getContentType());
                 newDoc.setFileName(fileName);
                 newDoc.setDocumentType(docType);
-                username.get().setPhotoPath("http://localhost:8082/api/user/getImage/"+fileName);
+                username.get().setPhotoPath("/api/user/getImage/"+fileName);
                 docStorageRepo.save(newDoc);
 
             }

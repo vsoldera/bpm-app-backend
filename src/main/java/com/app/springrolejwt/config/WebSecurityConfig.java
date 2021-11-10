@@ -51,6 +51,11 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 	private String password;
 
 	@Override
+	public void configure(WebSecurity web) {
+		web.ignoring().antMatchers("/api/user/getImage/**");
+	}
+
+	@Override
 	public void configure(AuthenticationManagerBuilder authenticationManagerBuilder) throws Exception {
 
 		authenticationManagerBuilder.inMemoryAuthentication()
