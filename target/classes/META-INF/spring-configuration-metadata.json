@@ -1,0 +1,42 @@
+{
+  "groups": [
+    {
+      "name": "file",
+      "type": "com.app.springrolejwt.model.DocumentStorageProperties",
+      "sourceType": "com.app.springrolejwt.model.DocumentStorageProperties"
+    }
+  ],
+  "properties": [
+    {
+      "name": "file.document-format",
+      "type": "java.lang.String",
+      "sourceType": "com.app.springrolejwt.model.DocumentStorageProperties"
+    },
+    {
+      "name": "file.document-id",
+      "type": "java.lang.Integer",
+      "sourceType": "com.app.springrolejwt.model.DocumentStorageProperties"
+    },
+    {
+      "name": "file.document-type",
+      "type": "java.lang.String",
+      "sourceType": "com.app.springrolejwt.model.DocumentStorageProperties"
+    },
+    {
+      "name": "file.file-name",
+      "type": "java.lang.String",
+      "sourceType": "com.app.springrolejwt.model.DocumentStorageProperties"
+    },
+    {
+      "name": "file.upload-dir",
+      "type": "java.lang.String",
+      "sourceType": "com.app.springrolejwt.model.DocumentStorageProperties"
+    },
+    {
+      "name": "file.user-id",
+      "type": "java.lang.Integer",
+      "sourceType": "com.app.springrolejwt.model.DocumentStorageProperties"
+    }
+  ],
+  "hints": []
+}

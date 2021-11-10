@@ -85,7 +85,8 @@ public class AccessController {
 					userDetails.getSex(),
 					userDetails.getIsWheelchairUser(),
 					userDetails.getHasAlzheimer(),
-					userDetails.getPhone()
+					userDetails.getPhone(),
+				userDetails.getPhotoPath()
 				));
 	}
 

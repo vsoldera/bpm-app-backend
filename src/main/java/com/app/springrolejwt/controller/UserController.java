@@ -6,14 +6,13 @@ import com.app.springrolejwt.model.Role;
 import com.app.springrolejwt.model.User;
 import com.app.springrolejwt.model.enums.RoleEnum;
 import com.app.springrolejwt.model.vo.MessageVo;
+import com.app.springrolejwt.model.vo.UploadFileResponse;
 import com.app.springrolejwt.model.vo.userVos.*;
+import com.app.springrolejwt.repository.implementation.DocumentStorageService;
 import com.app.springrolejwt.repository.implementation.HealthServiceImpl;
 import com.app.springrolejwt.repository.implementation.RestService;
 import com.app.springrolejwt.repository.implementation.UserDetailsServiceImpl;
-import com.app.springrolejwt.repository.interfaces.DependencyRepository;
-import com.app.springrolejwt.repository.interfaces.HealthRepository;
-import com.app.springrolejwt.repository.interfaces.RoleRepository;
-import com.app.springrolejwt.repository.interfaces.UserRepository;
+import com.app.springrolejwt.repository.interfaces.*;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.*;
@@ -22,7 +21,9 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import java.io.IOException;
 import java.time.ZonedDateTime;
@@ -55,6 +56,9 @@ public class UserController {
 
     @Autowired
     RestService restService;
+
+    @Autowired
+    private DocumentStorageService documentStorageService;
 
 
     @GetMapping("/emergencyContacts")
@@ -145,7 +149,6 @@ public class UserController {
     }
 
     @DeleteMapping("/removeEmergencyContact")
-    @Transactional
     @PreAuthorize("hasRole('USER')")
     public ResponseEntity<?> removeEmergencyContacts(@RequestBody DependentVo dependentVo) throws IOException{
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
@@ -201,6 +204,23 @@ public class UserController {
         throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
                 "O UUID digitado não existe ou não é pertencente a nenhum de seus contatos");
 
+
+    }
+
+    @PostMapping("/uploadImage")
+    @PreAuthorize("hasRole('USER')")
+    public UploadFileResponse uploadImage(@RequestParam("file")String file, @RequestParam("docType") String docType) throws IOException {
+
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        Optional<User> username = userRepository.findByUsername(auth.getName());
+
+        byte[] decode = Base64.getDecoder().decode(file);
+        MultipartFile multi = new BASE64DecodedMultipartFile(Base64.getDecoder().decode(file));
+        String fileName = documentStorageService.storeFile(multi, username.get().getId().intValue(), docType);
+
+        String fileDownloadUri = ServletUriComponentsBuilder.fromCurrentContextPath().path("/downloadFile/").path(fileName).toUriString();
+
+        return new UploadFileResponse(fileName, fileDownloadUri, multi.getContentType(), multi.getSize());
     }
 
 

@@ -47,8 +47,9 @@ public class UserDetailsImpl implements UserDetails {
 	private Boolean isWheelchairUser;
 	private Boolean hasAlzheimer;
 	private Boolean isRegistered;
+	private String photoPath;
 
-	public UserDetailsImpl(Long id, String username, String completeName, String phone, String password, Collection<? extends GrantedAuthority> authorities, String birthDate, Integer weight, Integer height, String sex, Boolean isWheelchairUser, Boolean hasAlzheimer, String uuid) {
+	public UserDetailsImpl(Long id, String username, String completeName, String phone, String password, Collection<? extends GrantedAuthority> authorities, String birthDate, Integer weight, Integer height, String sex, Boolean isWheelchairUser, Boolean hasAlzheimer, String uuid, String photoPath) {
 		this.id = id;
 		this.username = username;
 		this.completeName = completeName;
@@ -62,6 +63,7 @@ public class UserDetailsImpl implements UserDetails {
 		this.isWheelchairUser = isWheelchairUser;
 		this.hasAlzheimer = hasAlzheimer;
 		this.uuid = uuid;
+		this.photoPath = photoPath;
 	}
 
 	public static UserDetailsImpl build(User user) {
@@ -83,7 +85,8 @@ public class UserDetailsImpl implements UserDetails {
 				user.getSex(),
 				user.getIsWheelchairUser(),
 				user.getHasAlzheimer(),
-				user.getUuid()
+				user.getUuid(),
+				user.getPhotoPath()
 		);
 	}
 

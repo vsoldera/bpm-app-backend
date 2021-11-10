@@ -21,8 +21,9 @@ public class UserDataVo {
     private Boolean isWheelchairUser;
     private Boolean hasAlzheimer;
     private String phone;
+    private String photoPath;
 
-    public UserDataVo(String username, String uuid, String completeName, List<String> roles, String birthDate, Integer weight, Integer height, String sex, Boolean isWheelchairUser, Boolean hasAlzheimer, String phone) {
+    public UserDataVo(String username, String uuid, String completeName, List<String> roles, String birthDate, Integer weight, Integer height, String sex, Boolean isWheelchairUser, Boolean hasAlzheimer, String phone, String photoPath) {
         this.username = username;
         this.uuid = uuid;
         this.completeName = completeName;
@@ -34,5 +35,6 @@ public class UserDataVo {
         this.isWheelchairUser = isWheelchairUser;
         this.hasAlzheimer = hasAlzheimer;
         this.phone = phone;
+        this.photoPath = photoPath;
     }
 }

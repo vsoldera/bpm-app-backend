@@ -69,7 +69,8 @@ public class User {
 	private RefreshToken refreshToken;
 	private Boolean isRefreshActive;
 
-	private Boolean photoPath;
+	@Column(nullable = true, length = 64)
+	private String photoPath;
 
 	public User() {
 	}
